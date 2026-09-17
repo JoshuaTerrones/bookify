@@ -9,7 +9,11 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+db.sqlite3
+cookies.txt
+.idea/
+.DS_Store
+main.py
 # testing
 /coverage
 
