@@ -50,21 +50,25 @@ export default function Home() {
     return (
         <main className="min-h-screen bg-gray-50 px-4 sm:px-6 py-8 sm:py-10 md:px-12">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Bookify</h1>
+                <div className="flex items-center justify-between mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Bookify</h1>
+                    <a href="/admin" className="text-sm text-gray-500 underline">
+                        Administrar
+                    </a>
+                </div>
                 <p className="text-gray-500 mb-6 sm:mb-8">Catálogo de libros</p>
-
                 <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8">
                     <input
                         type="text"
                         placeholder="Buscar por título o autor..."
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
-                        className="w-full sm:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        className="w-full sm:w-96 px-4 py-2 border text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
                     />
                     <select
                         value={orden}
                         onChange={(e) => setOrden(e.target.value)}
-                        className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg"
+                        className="w-full sm:w-auto px-3 py-2 text-black border border-gray-300 rounded-lg"
                     >
                         <option value="">Ordenar por</option>
                         <option value="autor">Autor</option>

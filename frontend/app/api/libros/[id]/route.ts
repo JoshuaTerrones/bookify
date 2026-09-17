@@ -1,0 +1,24 @@
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const body = await req.json();
+    const cookie = req.headers.get('cookie') || '';
+
+    const res = await fetch(`http://127.0.0.1:8000/api/libros/${id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', cookie },
+        body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return Response.json(data);
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const cookie = req.headers.get('cookie') || '';
+
+    await fetch(`http://127.0.0.1:8000/api/libros/${id}/`, {
+        method: 'DELETE',
+        headers: { cookie },
+    });
+    return Response.json({ ok: true });
+}
