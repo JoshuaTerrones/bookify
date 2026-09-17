@@ -55,7 +55,7 @@ export default function Admin() {
         <main className="min-h-screen bg-gray-50 p-6 md:p-10">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold">Administrar libros</h1>
+                    <h1 className="text-2xl font-bold text-black">Administrar libros</h1>
                     <div className="flex items-center gap-4">
                         <a href="/" className="text-sm text-gray-500 underline">
                             Ver catálogo

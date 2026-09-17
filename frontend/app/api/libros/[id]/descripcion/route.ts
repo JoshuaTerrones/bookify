@@ -1,10 +1,12 @@
+const API_URL = process.env.API_URL || 'http://127.0.0.1:8000';
+
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
 
-    const libroRes = await fetch(`http://127.0.0.1:8000/api/libros/${id}/`);
+    const libroRes = await fetch(`${API_URL}/api/libros/${id}/`);
     const libro = await libroRes.json();
     if (!libro.obra_key) return Response.json({ descripcion: null });
 
