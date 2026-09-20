@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Libro, Cliente
-from .serializers import LibroSerializer, ClienteSerializer
+from .models import Libro, Cliente, Pedido
+from .serializers import LibroSerializer, ClienteSerializer, PedidoSerializer
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -46,3 +46,12 @@ class MeView(APIView):
         if request.user.is_authenticated:
             return Response({'autenticado': True, 'username': request.user.username})
         return Response({'autenticado': False})
+
+class PedidoViewSet(viewsets.ModelViewSet):
+        queryset = Pedido.objects.all()
+        serializer_class = PedidoSerializer
+
+        def get_permissions(self):
+            if self.action in ['create', 'update', 'partial_update', 'destroy']:
+                return [permissions.IsAuthenticated()]
+            return [permissions.AllowAny()]
