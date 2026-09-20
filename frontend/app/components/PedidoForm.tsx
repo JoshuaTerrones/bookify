@@ -34,6 +34,7 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [libros, setLibros] = useState<Libro[]>([]);
     const [guardando, setGuardando] = useState(false);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetch('/api/clientes').then(r => r.json()).then(setClientes);
@@ -56,13 +57,14 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
 
         if (!cliente) {
-            alert('Selecciona un cliente');
+            setError('Selecciona un cliente');
             return;
         }
         if (detalles.length === 0) {
-            alert('Añade al menos un libro');
+            setError('Añade al menos un libro');
             return;
         }
 
@@ -75,13 +77,32 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
         const url = pedidoInicial?.id ? `/api/pedidos/${pedidoInicial.id}` : '/api/pedidos';
         const method = pedidoInicial?.id ? 'PUT' : 'POST';
 
-        await fetch(url, {
+        const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body,
         });
 
         setGuardando(false);
+
+        if (!res.ok) {
+            try {
+                const data = await res.json();
+                let mensaje = 'Error al guardar el pedido';
+                if (typeof data === 'string') {
+                    mensaje = data;
+                } else if (Array.isArray(data)) {
+                    mensaje = data.join(', ');
+                } else if (typeof data === 'object') {
+                    mensaje = Object.values(data).flat().join('\n');
+                }
+                setError(mensaje);
+            } catch {
+                setError('Error al guardar el pedido');
+            }
+            return;
+        }
+
         onGuardado();
     };
 
@@ -147,6 +168,13 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                     + Añadir libro
                 </button>
             </div>
+
+            {/* Mensaje de error */}
+            {error && (
+                <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                </div>
+            )}
 
             {/* Botones */}
             <div className="flex gap-3 pt-2">

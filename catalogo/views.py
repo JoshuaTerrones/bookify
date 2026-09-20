@@ -46,12 +46,18 @@ class MeView(APIView):
         if request.user.is_authenticated:
             return Response({'autenticado': True, 'username': request.user.username})
         return Response({'autenticado': False})
-
 class PedidoViewSet(viewsets.ModelViewSet):
-        queryset = Pedido.objects.all()
-        serializer_class = PedidoSerializer
+    queryset = Pedido.objects.all()
+    serializer_class = PedidoSerializer
 
-        def get_permissions(self):
-            if self.action in ['create', 'update', 'partial_update', 'destroy']:
-                return [permissions.IsAuthenticated()]
-            return [permissions.AllowAny()]
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_destroy(self, instance):
+        # Devolver el stock de cada detalle antes de borrar el pedido
+        for detalle in instance.detalles.all():
+            detalle.libro.stock += detalle.cantidad
+            detalle.libro.save()
+        instance.delete()
