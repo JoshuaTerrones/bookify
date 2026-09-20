@@ -225,9 +225,3 @@ bookify/
 - [ ] Desplegar a producción (frontend en Vercel, backend en Railway o Render).
 - [ ] Añadir roles de usuario (admin, editor, lector).
 - [ ] Mejorar el diseño visual del panel de administración.
-
----
-
-## 📄 Licencia
-
-MIT
