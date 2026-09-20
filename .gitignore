@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+cookies.txt
+
+# Node
+node_modules/
+.next/
+dist/
