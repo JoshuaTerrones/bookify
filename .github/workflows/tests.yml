@@ -15,8 +15,8 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: bookify_test
-          POSTGRES_USER: postgres
+          POSTGRES_DB: bookify
+          POSTGRES_USER: josh
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
@@ -42,9 +42,8 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/bookify_test
-          DJANGO_SECRET_KEY: test-secret-key
-          DEBUG: 'True'
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
         run: pytest catalogo/tests/ -v
 
   frontend-tests:
