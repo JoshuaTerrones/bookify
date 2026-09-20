@@ -1,10 +1,16 @@
-const API_URL = process.env.API_URL || "http://127.0.0.1:8000";
+const API_URL = process.env.API_URL || 'http://127.0.0.1:8000';
 
-export async function GET() {
-    const res = await fetch(`${API_URL}/api/clientes/`, { cache: 'no-store' });
+export async function GET(req: Request) {
+    const cookie = req.headers.get('cookie') || '';
+
+    const res = await fetch(`${API_URL}/api/clientes/`, {
+        cache: 'no-store',
+        headers: { cookie },
+    });
     const data = await res.json();
     return Response.json(data);
 }
+
 export async function POST(req: Request) {
     const body = await req.json();
     const cookie = req.headers.get('cookie') || '';
