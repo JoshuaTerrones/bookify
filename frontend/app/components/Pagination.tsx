@@ -22,35 +22,43 @@ export default function Pagination({ paginaActual, totalPaginas, onCambiarPagina
     };
 
     return (
-        <div className="flex items-center justify-center gap-2 mt-4">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-4">
             <button
                 onClick={() => onCambiarPagina(Math.max(1, paginaActual - 1))}
                 disabled={paginaActual === 1}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-2 sm:py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-                ← Anterior
+                ←<span className="hidden sm:inline ml-1">Anterior</span>
             </button>
 
-            {generarPaginas().map(num => (
-                <button
-                    key={num}
-                    onClick={() => onCambiarPagina(num)}
-                    className={`w-8 h-8 text-xs font-medium rounded-lg transition ${
-                        paginaActual === num
-                            ? 'bg-black text-white'
-                            : 'text-gray-700 border border-gray-300 hover:bg-gray-100'
-                    }`}
-                >
-                    {num}
-                </button>
-            ))}
+            {/* Números: solo en tablet/desktop */}
+            <div className="hidden sm:flex items-center gap-2">
+                {generarPaginas().map(num => (
+                    <button
+                        key={num}
+                        onClick={() => onCambiarPagina(num)}
+                        className={`w-8 h-8 text-xs font-medium rounded-lg transition ${
+                            paginaActual === num
+                                ? 'bg-black text-white'
+                                : 'text-gray-700 border border-gray-300 hover:bg-gray-100'
+                        }`}
+                    >
+                        {num}
+                    </button>
+                ))}
+            </div>
+
+            {/* Indicador en móvil */}
+            <span className="sm:hidden text-xs font-medium text-gray-700 px-3">
+                Página {paginaActual} de {totalPaginas}
+            </span>
 
             <button
                 onClick={() => onCambiarPagina(Math.min(totalPaginas, paginaActual + 1))}
                 disabled={paginaActual === totalPaginas}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-2 sm:py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
-                Siguiente →
+                <span className="hidden sm:inline mr-1">Siguiente</span>→
             </button>
         </div>
     );

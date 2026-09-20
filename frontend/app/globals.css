@@ -80,3 +80,14 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.4s ease-out both;
 }
+
+/* === UTILIDADES === */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

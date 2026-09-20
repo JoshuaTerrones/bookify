@@ -62,7 +62,6 @@ export default function Admin() {
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [paginaPedidos, setPaginaPedidos] = useState(1);
 
-    // Filtros admin (solo para libros)
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
     const [precioMin, setPrecioMin] = useState('');
     const [precioMax, setPrecioMax] = useState('');
@@ -71,7 +70,6 @@ export default function Admin() {
 
     const router = useRouter();
 
-    // === HOOKS (todos arriba, antes de cualquier return) ===
     const cargarLibros = useCallback(() => {
         fetch('/api/libros').then(r => r.json()).then(data => {
             setLibros(data);
@@ -106,13 +104,11 @@ export default function Admin() {
         setPaginaPedidos(1);
     }, [busquedaAdmin, tabActiva, precioMin, precioMax, filtroStock, autorFiltro]);
 
-    // Autores únicos (useMemo antes del return temprano)
     const autoresUnicos = useMemo(() => {
         const set = new Set(libros.map(l => l.autor));
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [libros]);
 
-    // === RETURN TEMPRANO ===
     if (autenticado === null) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -121,7 +117,6 @@ export default function Admin() {
         );
     }
 
-    // === FUNCIONES (no son hooks, pueden ir después del return) ===
     const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
         setToast({ mensaje, tipo });
     };
@@ -152,7 +147,6 @@ export default function Admin() {
         router.push('/login');
     };
 
-    // === FILTROS Y CÁLCULOS ===
     const filtrosActivos =
         (precioMin ? 1 : 0) +
         (precioMax ? 1 : 0) +
@@ -193,7 +187,6 @@ export default function Admin() {
         p.detalles.some(d => d.libro_titulo?.toLowerCase().includes(busquedaAdmin.toLowerCase()))
     );
 
-    // === PAGINACIÓN ===
     const librosDeLaPagina = librosFiltrados.slice(
         (paginaLibros - 1) * ITEMS_POR_PAGINA,
         paginaLibros * ITEMS_POR_PAGINA
@@ -225,9 +218,9 @@ export default function Admin() {
         <main className="min-h-screen bg-gray-50">
             {/* HEADER */}
             <header className="bg-white border-b border-gray-200">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center font-bold text-lg">
+                        <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center font-bold text-lg shrink-0">
                             B
                         </div>
                         <div>
@@ -235,7 +228,7 @@ export default function Admin() {
                             <p className="text-xs text-gray-500">Panel de administración</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4 sm:gap-3">
                         <a href="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
                             Ver catálogo
                         </a>
@@ -246,15 +239,15 @@ export default function Admin() {
                 </div>
             </header>
 
-            <div className="max-w-5xl mx-auto px-6 py-8">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
                 {/* TABS */}
-                <div className="border-b border-gray-200 mb-6">
-                    <div className="flex gap-1">
+                <div className="border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-1 min-w-max">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setTabActiva(tab.id)}
-                                className={`px-4 py-3 text-sm font-medium transition border-b-2 -mb-px ${
+                                className={`px-3 sm:px-4 py-3 text-sm font-medium transition border-b-2 -mb-px whitespace-nowrap ${
                                     tabActiva === tab.id
                                         ? 'border-black text-gray-900'
                                         : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
@@ -296,7 +289,7 @@ export default function Admin() {
                     {tabActiva === 'libros' && (
                         <button
                             onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`px-4 py-2 rounded-lg font-medium transition text-sm flex items-center gap-2 ${
+                            className={`px-4 py-2 rounded-lg font-medium transition text-sm flex items-center justify-center gap-2 ${
                                 mostrarFiltros || filtrosActivos > 0
                                     ? 'bg-black text-white'
                                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -414,7 +407,7 @@ export default function Admin() {
                         </div>
 
                         {mostrarFormLibro && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
+                            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <LibroForm
                                     libroInicial={libroEditando || undefined}
                                     onGuardado={() => {
@@ -451,8 +444,8 @@ export default function Admin() {
                             <>
                                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                                     {librosDeLaPagina.map(libro => (
-                                        <div key={libro.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                            <div className="flex items-center gap-4 min-w-0">
+                                        <div key={libro.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group gap-2">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                 <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 font-semibold flex-shrink-0">
                                                     {libro.titulo.charAt(0).toUpperCase()}
                                                 </div>
@@ -463,16 +456,16 @@ export default function Admin() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
                                                 <button
                                                     onClick={() => { setLibroEditando(libro); setMostrarFormLibro(true); }}
-                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
                                                 >
                                                     Editar
                                                 </button>
                                                 <button
                                                     onClick={() => handleBorrarLibro(libro.id)}
-                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
                                                 >
                                                     Borrar
                                                 </button>
@@ -511,7 +504,7 @@ export default function Admin() {
                         </div>
 
                         {mostrarFormCliente && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
+                            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <ClienteForm
                                     clienteInicial={clienteEditando || undefined}
                                     onGuardado={() => {
@@ -534,8 +527,8 @@ export default function Admin() {
                             <>
                                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                                     {clientesDeLaPagina.map(cliente => (
-                                        <div key={cliente.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                            <div className="flex items-center gap-4 min-w-0">
+                                        <div key={cliente.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group gap-2">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold flex-shrink-0">
                                                     {cliente.nombre.charAt(0).toUpperCase()}
                                                 </div>
@@ -544,16 +537,16 @@ export default function Admin() {
                                                     <p className="text-sm text-gray-500 truncate">{cliente.email}</p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
                                                 <button
                                                     onClick={() => { setClienteEditando(cliente); setMostrarFormCliente(true); }}
-                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
                                                 >
                                                     Editar
                                                 </button>
                                                 <button
                                                     onClick={() => handleBorrarCliente(cliente.id)}
-                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
                                                 >
                                                     Borrar
                                                 </button>
@@ -592,7 +585,7 @@ export default function Admin() {
                         </div>
 
                         {mostrarFormPedido && (
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
+                            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <PedidoForm
                                     pedidoInicial={pedidoEditando || undefined}
                                     onGuardado={() => {
@@ -615,8 +608,8 @@ export default function Admin() {
                             <>
                                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
                                     {pedidosDeLaPagina.map(pedido => (
-                                        <div key={pedido.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                            <div className="flex items-center gap-4 min-w-0">
+                                        <div key={pedido.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group gap-2">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                 <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-semibold flex-shrink-0">
                                                     #{pedido.id}
                                                 </div>
@@ -629,16 +622,16 @@ export default function Admin() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
                                                 <button
                                                     onClick={() => { setPedidoEditando(pedido); setMostrarFormPedido(true); }}
-                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
                                                 >
                                                     Editar
                                                 </button>
                                                 <button
                                                     onClick={() => handleBorrarPedido(pedido.id)}
-                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
                                                 >
                                                     Borrar
                                                 </button>

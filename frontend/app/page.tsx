@@ -23,7 +23,6 @@ export default function Home() {
     const [descripcion, setDescripcion] = useState<string | null>(null);
     const [cargandoDescripcion, setCargandoDescripcion] = useState(false);
 
-    // Filtros
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
     const [precioMin, setPrecioMin] = useState('');
     const [precioMax, setPrecioMax] = useState('');
@@ -39,7 +38,6 @@ export default function Home() {
             });
     }, []);
 
-    // Resetear página al cambiar cualquier filtro
     useEffect(() => {
         setPaginaActual(1);
     }, [busqueda, orden, precioMin, precioMax, soloDisponibles, autorFiltro]);
@@ -69,13 +67,11 @@ export default function Home() {
         return () => { document.body.style.overflow = ''; };
     }, [libroSeleccionado]);
 
-    // Lista de autores únicos (ordenados alfabéticamente)
     const autoresUnicos = useMemo(() => {
         const set = new Set(libros.map(l => l.autor));
         return Array.from(set).sort((a, b) => a.localeCompare(b));
     }, [libros]);
 
-    // Contar filtros activos
     const filtrosActivos =
         (precioMin ? 1 : 0) +
         (precioMax ? 1 : 0) +
@@ -89,7 +85,6 @@ export default function Home() {
         setAutorFiltro('');
     };
 
-    // Filtrar
     const librosFiltrados = libros.filter((libro) => {
         const coincideBusqueda =
             libro.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -128,7 +123,6 @@ export default function Home() {
 
     return (
         <main className="min-h-screen bg-gray-50">
-            {/* HEADER */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 backdrop-blur-sm bg-white/90">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
@@ -150,7 +144,6 @@ export default function Home() {
             </header>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-                {/* BÚSQUEDA, ORDEN Y FILTROS */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     <div className="relative flex-1 max-w-md">
                         <svg
@@ -183,7 +176,7 @@ export default function Home() {
 
                     <button
                         onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                        className={`px-4 py-2.5 rounded-lg font-medium transition text-sm flex items-center gap-2 ${
+                        className={`px-4 py-2.5 rounded-lg font-medium transition text-sm flex items-center justify-center gap-2 ${
                             mostrarFiltros || filtrosActivos > 0
                                 ? 'bg-black text-white'
                                 : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -203,11 +196,9 @@ export default function Home() {
                     </button>
                 </div>
 
-                {/* PANEL DE FILTROS */}
                 {mostrarFiltros && (
                     <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 animate-fade-in">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            {/* Precio mínimo */}
                             <div>
                                 <label htmlFor="precioMin" className="block text-xs font-medium text-gray-600 mb-1.5">
                                     Precio mínimo (S/)
@@ -222,7 +213,6 @@ export default function Home() {
                                 />
                             </div>
 
-                            {/* Precio máximo */}
                             <div>
                                 <label htmlFor="precioMax" className="block text-xs font-medium text-gray-600 mb-1.5">
                                     Precio máximo (S/)
@@ -237,7 +227,6 @@ export default function Home() {
                                 />
                             </div>
 
-                            {/* Autor */}
                             <div>
                                 <label htmlFor="autorFiltro" className="block text-xs font-medium text-gray-600 mb-1.5">
                                     Autor
@@ -255,7 +244,6 @@ export default function Home() {
                                 </select>
                             </div>
 
-                            {/* Disponibilidad */}
                             <div className="flex items-end">
                                 <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
                                     <input
@@ -280,14 +268,12 @@ export default function Home() {
                     </div>
                 )}
 
-                {/* INFO DE RESULTADOS */}
                 {!cargando && librosOrdenados.length > 0 && (
                     <p className="text-sm text-gray-500 mb-4">
                         Mostrando {indiceInicio + 1}–{Math.min(indiceFin, librosOrdenados.length)} de {librosOrdenados.length} {librosOrdenados.length === 1 ? 'libro' : 'libros'}
                     </p>
                 )}
 
-                {/* GRID DE LIBROS */}
                 {cargando ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
                         {[...Array(8)].map((_, i) => (
@@ -360,37 +346,42 @@ export default function Home() {
                             ))}
                         </div>
 
-                        {/* PAGINACIÓN */}
                         {totalPaginas > 1 && (
-                            <div className="flex items-center justify-center gap-2 mt-10">
+                            <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-10">
                                 <button
                                     onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
                                     disabled={paginaActual === 1}
-                                    className="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    className="px-3 py-2 sm:py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                                 >
-                                    ← Anterior
+                                    ←<span className="hidden sm:inline ml-1">Anterior</span>
                                 </button>
 
-                                {generarPaginas().map(num => (
-                                    <button
-                                        key={num}
-                                        onClick={() => setPaginaActual(num)}
-                                        className={`w-10 h-10 text-sm font-medium rounded-lg transition ${
-                                            paginaActual === num
-                                                ? 'bg-black text-white'
-                                                : 'text-gray-700 border border-gray-300 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {num}
-                                    </button>
-                                ))}
+                                <div className="hidden sm:flex items-center gap-2">
+                                    {generarPaginas().map(num => (
+                                        <button
+                                            key={num}
+                                            onClick={() => setPaginaActual(num)}
+                                            className={`w-10 h-10 text-sm font-medium rounded-lg transition ${
+                                                paginaActual === num
+                                                    ? 'bg-black text-white'
+                                                    : 'text-gray-700 border border-gray-300 hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            {num}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <span className="sm:hidden text-xs font-medium text-gray-700 px-3">
+                                    Página {paginaActual} de {totalPaginas}
+                                </span>
 
                                 <button
                                     onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
                                     disabled={paginaActual === totalPaginas}
-                                    className="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    className="px-3 py-2 sm:py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
                                 >
-                                    Siguiente →
+                                    <span className="hidden sm:inline mr-1">Siguiente</span>→
                                 </button>
                             </div>
                         )}
@@ -398,7 +389,6 @@ export default function Home() {
                 )}
             </div>
 
-            {/* MODAL */}
             {libroSeleccionado && (
                 <div
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-6 animate-fade-in"
@@ -412,7 +402,7 @@ export default function Home() {
                             <div className="w-10 h-1 rounded-full bg-gray-300" />
                         </div>
 
-                        <div className="h-52 sm:h-64 md:h-auto md:w-2/5 bg-gray-100 shrink-0">
+                        <div className="h-40 sm:h-56 md:h-auto md:w-2/5 bg-gray-100 shrink-0">
                             {libroSeleccionado.portada_url ? (
                                 <img
                                     src={libroSeleccionado.portada_url}
