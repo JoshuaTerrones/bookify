@@ -62,8 +62,9 @@ export default function LibroForm({ libroInicial, onGuardado, onCancelar }: Libr
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label className={labelClass}>Título</label>
+                <label htmlFor="titulo" className={labelClass}>Título</label>
                 <input
+                    id="titulo"
                     type="text"
                     value={titulo}
                     onChange={(e) => setTitulo(e.target.value)}
@@ -74,8 +75,9 @@ export default function LibroForm({ libroInicial, onGuardado, onCancelar }: Libr
             </div>
 
             <div>
-                <label className={labelClass}>Autor</label>
+                <label htmlFor="autor" className={labelClass}>Autor</label>
                 <input
+                    id="autor"
                     type="text"
                     value={autor}
                     onChange={(e) => setAutor(e.target.value)}
@@ -87,8 +89,9 @@ export default function LibroForm({ libroInicial, onGuardado, onCancelar }: Libr
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className={labelClass}>Precio (S/)</label>
+                    <label htmlFor="precio" className={labelClass}>Precio (S/)</label>
                     <input
+                        id="precio"
                         type="number"
                         step="0.01"
                         value={precio}
@@ -99,8 +102,9 @@ export default function LibroForm({ libroInicial, onGuardado, onCancelar }: Libr
                     />
                 </div>
                 <div>
-                    <label className={labelClass}>Stock</label>
+                    <label htmlFor="stock" className={labelClass}>Stock</label>
                     <input
+                        id="stock"
                         type="number"
                         value={stock}
                         onChange={(e) => setStock(e.target.value)}

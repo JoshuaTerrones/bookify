@@ -108,8 +108,9 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-                <label className={labelClass}>Cliente</label>
+                <label htmlFor="cliente" className={labelClass}>Cliente</label>
                 <select
+                    id="cliente"
                     value={cliente}
                     onChange={(e) => setCliente(e.target.value)}
                     required
@@ -147,6 +148,7 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                                 value={detalle.libro}
                                 onChange={(e) => cambiarItem(index, 'libro', parseInt(e.target.value))}
                                 required
+                                aria-label={`Libro del item ${index + 1}`}
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
                             >
                                 <option value={0}>-- Selecciona un libro --</option>
@@ -160,6 +162,7 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                                 value={detalle.cantidad}
                                 onChange={(e) => cambiarItem(index, 'cantidad', parseInt(e.target.value))}
                                 required
+                                aria-label={`Cantidad del item ${index + 1}`}
                                 className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
                             />
                             <button

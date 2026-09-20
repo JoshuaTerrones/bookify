@@ -58,8 +58,9 @@ export default function ClienteForm({ clienteInicial, onGuardado, onCancelar }: 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label className={labelClass}>Nombre</label>
+                <label htmlFor="nombre" className={labelClass}>Nombre</label>
                 <input
+                    id="nombre"
                     type="text"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
@@ -70,8 +71,9 @@ export default function ClienteForm({ clienteInicial, onGuardado, onCancelar }: 
             </div>
 
             <div>
-                <label className={labelClass}>Email</label>
+                <label htmlFor="email" className={labelClass}>Email</label>
                 <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
