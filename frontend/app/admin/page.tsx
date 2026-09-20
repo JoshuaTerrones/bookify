@@ -71,6 +71,7 @@ export default function Admin() {
 
     const router = useRouter();
 
+    // === HOOKS (todos arriba, antes de cualquier return) ===
     const cargarLibros = useCallback(() => {
         fetch('/api/libros').then(r => r.json()).then(data => {
             setLibros(data);
@@ -105,6 +106,22 @@ export default function Admin() {
         setPaginaPedidos(1);
     }, [busquedaAdmin, tabActiva, precioMin, precioMax, filtroStock, autorFiltro]);
 
+    // Autores únicos (useMemo antes del return temprano)
+    const autoresUnicos = useMemo(() => {
+        const set = new Set(libros.map(l => l.autor));
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [libros]);
+
+    // === RETURN TEMPRANO ===
+    if (autenticado === null) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <p className="text-gray-500">Verificando sesión...</p>
+            </div>
+        );
+    }
+
+    // === FUNCIONES (no son hooks, pueden ir después del return) ===
     const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
         setToast({ mensaje, tipo });
     };
@@ -135,21 +152,7 @@ export default function Admin() {
         router.push('/login');
     };
 
-    if (autenticado === null) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <p className="text-gray-500">Verificando sesión...</p>
-            </div>
-        );
-    }
-
-    // Autores únicos
-    const autoresUnicos = useMemo(() => {
-        const set = new Set(libros.map(l => l.autor));
-        return Array.from(set).sort((a, b) => a.localeCompare(b));
-    }, [libros]);
-
-    // Contar filtros activos
+    // === FILTROS Y CÁLCULOS ===
     const filtrosActivos =
         (precioMin ? 1 : 0) +
         (precioMax ? 1 : 0) +
@@ -163,7 +166,6 @@ export default function Admin() {
         setAutorFiltro('');
     };
 
-    // === FILTRADO ===
     const librosFiltrados = libros.filter(l => {
         const coincideBusqueda =
             l.titulo.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
@@ -291,7 +293,6 @@ export default function Admin() {
                         />
                     </div>
 
-                    {/* Botón de filtros: solo visible en la tab de libros */}
                     {tabActiva === 'libros' && (
                         <button
                             onClick={() => setMostrarFiltros(!mostrarFiltros)}
@@ -316,11 +317,10 @@ export default function Admin() {
                     )}
                 </div>
 
-                {/* PANEL DE FILTROS (solo en tab libros) */}
+                {/* PANEL DE FILTROS */}
                 {tabActiva === 'libros' && mostrarFiltros && (
                     <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 animate-fade-in">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            {/* Precio mínimo */}
                             <div>
                                 <label htmlFor="adminPrecioMin" className={labelFiltroClass}>
                                     Precio mínimo (S/)
@@ -335,7 +335,6 @@ export default function Admin() {
                                 />
                             </div>
 
-                            {/* Precio máximo */}
                             <div>
                                 <label htmlFor="adminPrecioMax" className={labelFiltroClass}>
                                     Precio máximo (S/)
@@ -350,7 +349,6 @@ export default function Admin() {
                                 />
                             </div>
 
-                            {/* Autor */}
                             <div>
                                 <label htmlFor="adminAutorFiltro" className={labelFiltroClass}>
                                     Autor
@@ -368,7 +366,6 @@ export default function Admin() {
                                 </select>
                             </div>
 
-                            {/* Estado de stock */}
                             <div>
                                 <label htmlFor="adminFiltroStock" className={labelFiltroClass}>
                                     Estado
