@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import LibroForm from '../components/LibroForm';
 import ClienteForm from '../components/ClienteForm';
@@ -62,6 +62,13 @@ export default function Admin() {
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [paginaPedidos, setPaginaPedidos] = useState(1);
 
+    // Filtros admin (solo para libros)
+    const [mostrarFiltros, setMostrarFiltros] = useState(false);
+    const [precioMin, setPrecioMin] = useState('');
+    const [precioMax, setPrecioMax] = useState('');
+    const [filtroStock, setFiltroStock] = useState<'todos' | 'disponibles' | 'agotados'>('todos');
+    const [autorFiltro, setAutorFiltro] = useState('');
+
     const router = useRouter();
 
     const cargarLibros = useCallback(() => {
@@ -92,12 +99,11 @@ export default function Admin() {
         });
     }, [router, cargarLibros, cargarClientes, cargarPedidos]);
 
-    // Resetear páginas al cambiar búsqueda o tab
     useEffect(() => {
         setPaginaLibros(1);
         setPaginaClientes(1);
         setPaginaPedidos(1);
-    }, [busquedaAdmin, tabActiva]);
+    }, [busquedaAdmin, tabActiva, precioMin, precioMax, filtroStock, autorFiltro]);
 
     const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
         setToast({ mensaje, tipo });
@@ -137,11 +143,43 @@ export default function Admin() {
         );
     }
 
+    // Autores únicos
+    const autoresUnicos = useMemo(() => {
+        const set = new Set(libros.map(l => l.autor));
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [libros]);
+
+    // Contar filtros activos
+    const filtrosActivos =
+        (precioMin ? 1 : 0) +
+        (precioMax ? 1 : 0) +
+        (filtroStock !== 'todos' ? 1 : 0) +
+        (autorFiltro ? 1 : 0);
+
+    const limpiarFiltros = () => {
+        setPrecioMin('');
+        setPrecioMax('');
+        setFiltroStock('todos');
+        setAutorFiltro('');
+    };
+
     // === FILTRADO ===
-    const librosFiltrados = libros.filter(l =>
-        l.titulo.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
-        l.autor.toLowerCase().includes(busquedaAdmin.toLowerCase())
-    );
+    const librosFiltrados = libros.filter(l => {
+        const coincideBusqueda =
+            l.titulo.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
+            l.autor.toLowerCase().includes(busquedaAdmin.toLowerCase());
+
+        const precio = parseFloat(l.precio);
+        const coincideMin = !precioMin || precio >= parseFloat(precioMin);
+        const coincideMax = !precioMax || precio <= parseFloat(precioMax);
+        const coincideStock =
+            filtroStock === 'todos' ||
+            (filtroStock === 'disponibles' && l.stock > 0) ||
+            (filtroStock === 'agotados' && l.stock === 0);
+        const coincideAutor = !autorFiltro || l.autor === autorFiltro;
+
+        return coincideBusqueda && coincideMin && coincideMax && coincideStock && coincideAutor;
+    });
 
     const clientesFiltrados = clientes.filter(c =>
         c.nombre.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
@@ -177,6 +215,9 @@ export default function Admin() {
         { id: 'clientes' as const, label: 'Clientes', count: clientes.length },
         { id: 'pedidos' as const, label: 'Pedidos', count: pedidos.length },
     ];
+
+    const inputFiltroClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition";
+    const labelFiltroClass = "block text-xs font-medium text-gray-600 mb-1.5";
 
     return (
         <main className="min-h-screen bg-gray-50">
@@ -230,9 +271,9 @@ export default function Admin() {
                     </div>
                 </div>
 
-                {/* BUSCADOR ADMIN */}
-                <div className="mb-4">
-                    <div className="relative max-w-md">
+                {/* BUSCADOR Y FILTROS */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <div className="relative flex-1 max-w-md">
                         <svg
                             className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
                             fill="none"
@@ -249,13 +290,118 @@ export default function Admin() {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
                         />
                     </div>
+
+                    {/* Botón de filtros: solo visible en la tab de libros */}
+                    {tabActiva === 'libros' && (
+                        <button
+                            onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                            className={`px-4 py-2 rounded-lg font-medium transition text-sm flex items-center gap-2 ${
+                                mostrarFiltros || filtrosActivos > 0
+                                    ? 'bg-black text-white'
+                                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                            }`}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            Filtros
+                            {filtrosActivos > 0 && (
+                                <span className={`px-1.5 py-0.5 rounded-full text-xs ${
+                                    mostrarFiltros || filtrosActivos > 0 ? 'bg-white text-black' : 'bg-black text-white'
+                                }`}>
+                                    {filtrosActivos}
+                                </span>
+                            )}
+                        </button>
+                    )}
                 </div>
+
+                {/* PANEL DE FILTROS (solo en tab libros) */}
+                {tabActiva === 'libros' && mostrarFiltros && (
+                    <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 animate-fade-in">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            {/* Precio mínimo */}
+                            <div>
+                                <label htmlFor="adminPrecioMin" className={labelFiltroClass}>
+                                    Precio mínimo (S/)
+                                </label>
+                                <input
+                                    id="adminPrecioMin"
+                                    type="number"
+                                    placeholder="0"
+                                    value={precioMin}
+                                    onChange={(e) => setPrecioMin(e.target.value)}
+                                    className={inputFiltroClass}
+                                />
+                            </div>
+
+                            {/* Precio máximo */}
+                            <div>
+                                <label htmlFor="adminPrecioMax" className={labelFiltroClass}>
+                                    Precio máximo (S/)
+                                </label>
+                                <input
+                                    id="adminPrecioMax"
+                                    type="number"
+                                    placeholder="100"
+                                    value={precioMax}
+                                    onChange={(e) => setPrecioMax(e.target.value)}
+                                    className={inputFiltroClass}
+                                />
+                            </div>
+
+                            {/* Autor */}
+                            <div>
+                                <label htmlFor="adminAutorFiltro" className={labelFiltroClass}>
+                                    Autor
+                                </label>
+                                <select
+                                    id="adminAutorFiltro"
+                                    value={autorFiltro}
+                                    onChange={(e) => setAutorFiltro(e.target.value)}
+                                    className={`${inputFiltroClass} bg-white`}
+                                >
+                                    <option value="">Todos los autores</option>
+                                    {autoresUnicos.map(a => (
+                                        <option key={a} value={a}>{a}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Estado de stock */}
+                            <div>
+                                <label htmlFor="adminFiltroStock" className={labelFiltroClass}>
+                                    Estado
+                                </label>
+                                <select
+                                    id="adminFiltroStock"
+                                    value={filtroStock}
+                                    onChange={(e) => setFiltroStock(e.target.value as 'todos' | 'disponibles' | 'agotados')}
+                                    className={`${inputFiltroClass} bg-white`}
+                                >
+                                    <option value="todos">Todos</option>
+                                    <option value="disponibles">Solo disponibles</option>
+                                    <option value="agotados">Solo agotados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {filtrosActivos > 0 && (
+                            <button
+                                onClick={limpiarFiltros}
+                                className="text-sm text-gray-600 hover:text-black underline transition"
+                            >
+                                Limpiar filtros
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* === LIBROS === */}
                 {tabActiva === 'libros' && (
                     <div>
                         <div className="flex items-center justify-between mb-4">
-                            {busquedaAdmin && (
+                            {(busquedaAdmin || filtrosActivos > 0) && (
                                 <p className="text-sm text-gray-500">
                                     {librosFiltrados.length} {librosFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
@@ -290,9 +436,19 @@ export default function Admin() {
                             </div>
                         ) : librosFiltrados.length === 0 ? (
                             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                                <p className="text-gray-500">
-                                    {busquedaAdmin ? `No hay libros para "${busquedaAdmin}".` : 'No hay libros todavía.'}
+                                <p className="text-gray-500 mb-4">
+                                    {busquedaAdmin || filtrosActivos > 0
+                                        ? 'No hay libros que coincidan con la búsqueda o filtros.'
+                                        : 'No hay libros todavía.'}
                                 </p>
+                                {(busquedaAdmin || filtrosActivos > 0) && (
+                                    <button
+                                        onClick={() => { setBusquedaAdmin(''); limpiarFiltros(); }}
+                                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                    >
+                                        Limpiar todo
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <>
