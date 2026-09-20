@@ -1,5 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import ClienteForm from '@/app/components/ClienteForm';describe('ClienteForm', () => {
+import ClienteForm from '@/app/components/ClienteForm';
+
+describe('ClienteForm', () => {
     it('renderiza los campos de nombre y email', () => {
         render(
             <ClienteForm
@@ -8,8 +10,8 @@ import ClienteForm from '@/app/components/ClienteForm';describe('ClienteForm', (
             />
         );
 
-        expect(screen.getByPlaceholderText('Nombre')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
+        expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
+        expect(screen.getByLabelText('Email')).toBeInTheDocument();
     });
 
     it('muestra el botón Guardar y Cancelar', () => {
@@ -20,7 +22,7 @@ import ClienteForm from '@/app/components/ClienteForm';describe('ClienteForm', (
             />
         );
 
-        expect(screen.getByText('Guardar')).toBeInTheDocument();
+        expect(screen.getByText('Guardar cliente')).toBeInTheDocument();
         expect(screen.getByText('Cancelar')).toBeInTheDocument();
     });
 
