@@ -11,11 +11,14 @@ interface Libro {
     portada_url: string | null;
 }
 
+const LIBROS_POR_PAGINA = 12;
+
 export default function Home() {
     const [libros, setLibros] = useState<Libro[]>([]);
     const [busqueda, setBusqueda] = useState('');
     const [orden, setOrden] = useState('');
     const [cargando, setCargando] = useState(true);
+    const [paginaActual, setPaginaActual] = useState(1);
     const [libroSeleccionado, setLibroSeleccionado] = useState<Libro | null>(null);
     const [descripcion, setDescripcion] = useState<string | null>(null);
     const [cargandoDescripcion, setCargandoDescripcion] = useState(false);
@@ -29,6 +32,11 @@ export default function Home() {
             });
     }, []);
 
+    // Resetear página al cambiar búsqueda u orden
+    useEffect(() => {
+        setPaginaActual(1);
+    }, [busqueda, orden]);
+
     const abrirModal = (libro: Libro) => {
         setLibroSeleccionado(libro);
         setDescripcion(null);
@@ -41,7 +49,6 @@ export default function Home() {
             });
     };
 
-    // Cerrar modal con tecla ESC
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
             if (e.key === 'Escape') setLibroSeleccionado(null);
@@ -50,7 +57,6 @@ export default function Home() {
         return () => window.removeEventListener('keydown', handleEsc);
     }, []);
 
-    // Bloquear scroll del body cuando el modal está abierto
     useEffect(() => {
         document.body.style.overflow = libroSeleccionado ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
@@ -66,6 +72,24 @@ export default function Home() {
     if (orden === 'autor') librosOrdenados.sort((a, b) => a.autor.localeCompare(b.autor));
     if (orden === 'precio') librosOrdenados.sort((a, b) => parseFloat(a.precio) - parseFloat(b.precio));
     if (orden === 'fecha') librosOrdenados.sort((a, b) => b.id - a.id);
+
+    // Paginación
+    const totalPaginas = Math.ceil(librosOrdenados.length / LIBROS_POR_PAGINA);
+    const indiceInicio = (paginaActual - 1) * LIBROS_POR_PAGINA;
+    const indiceFin = indiceInicio + LIBROS_POR_PAGINA;
+    const librosDeLaPagina = librosOrdenados.slice(indiceInicio, indiceFin);
+
+    const generarPaginas = () => {
+        const paginas: number[] = [];
+        const max = 5;
+        let inicio = Math.max(1, paginaActual - Math.floor(max / 2));
+        let fin = Math.min(totalPaginas, inicio + max - 1);
+        if (fin - inicio + 1 < max) {
+            inicio = Math.max(1, fin - max + 1);
+        }
+        for (let i = inicio; i <= fin; i++) paginas.push(i);
+        return paginas;
+    };
 
     return (
         <main className="min-h-screen bg-gray-50">
@@ -122,6 +146,13 @@ export default function Home() {
                     </select>
                 </div>
 
+                {/* INFO DE RESULTADOS */}
+                {!cargando && librosOrdenados.length > 0 && (
+                    <p className="text-sm text-gray-500 mb-4">
+                        Mostrando {indiceInicio + 1}–{Math.min(indiceFin, librosOrdenados.length)} de {librosOrdenados.length} {librosOrdenados.length === 1 ? 'libro' : 'libros'}
+                    </p>
+                )}
+
                 {/* GRID DE LIBROS */}
                 {cargando ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
@@ -142,49 +173,86 @@ export default function Home() {
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
-                        {librosOrdenados.map((libro, index) => (
-                            <button
-                                key={libro.id}
-                                onClick={() => abrirModal(libro)}
-                                className="group text-left bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-400 hover:shadow-md transition-all duration-200 active:scale-95 animate-fade-in-up"
-                                style={{ animationDelay: `${Math.min(index * 30, 400)}ms` }}
-                            >
-                                <div className="aspect-[2/3] bg-gray-100 overflow-hidden">
-                                    {libro.portada_url ? (
-                                        <img
-                                            src={libro.portada_url}
-                                            alt={libro.titulo}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                                            Sin portada
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-3 sm:p-4">
-                                    <h2 className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
-                                        {libro.titulo}
-                                    </h2>
-                                    <p className="text-xs text-gray-500 line-clamp-1">{libro.autor}</p>
-                                    <div className="flex items-center justify-between mt-2 sm:mt-3">
-                                        <span className="text-sm sm:text-base font-bold text-gray-900">
-                                            S/ {libro.precio}
-                                        </span>
-                                        <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full ${
-                                            libro.stock > 0
-                                                ? 'bg-green-50 text-green-700'
-                                                : 'bg-red-50 text-red-700'
-                                        }`}>
-                                            {libro.stock > 0 ? `${libro.stock} disp.` : 'Agotado'}
-                                        </span>
+                    <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+                            {librosDeLaPagina.map((libro, index) => (
+                                <button
+                                    key={libro.id}
+                                    onClick={() => abrirModal(libro)}
+                                    className="group text-left bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-400 hover:shadow-md transition-all duration-200 active:scale-95 animate-fade-in-up"
+                                    style={{ animationDelay: `${Math.min(index * 30, 400)}ms` }}
+                                >
+                                    <div className="aspect-[2/3] bg-gray-100 overflow-hidden">
+                                        {libro.portada_url ? (
+                                            <img
+                                                src={libro.portada_url}
+                                                alt={libro.titulo}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                                Sin portada
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
+                                    <div className="p-3 sm:p-4">
+                                        <h2 className="text-xs sm:text-sm font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
+                                            {libro.titulo}
+                                        </h2>
+                                        <p className="text-xs text-gray-500 line-clamp-1">{libro.autor}</p>
+                                        <div className="flex items-center justify-between mt-2 sm:mt-3">
+                                            <span className="text-sm sm:text-base font-bold text-gray-900">
+                                                S/ {libro.precio}
+                                            </span>
+                                            <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full ${
+                                                libro.stock > 0
+                                                    ? 'bg-green-50 text-green-700'
+                                                    : 'bg-red-50 text-red-700'
+                                            }`}>
+                                                {libro.stock > 0 ? `${libro.stock} disp.` : 'Agotado'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* PAGINACIÓN */}
+                        {totalPaginas > 1 && (
+                            <div className="flex items-center justify-center gap-2 mt-10">
+                                <button
+                                    onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                                    disabled={paginaActual === 1}
+                                    className="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    ← Anterior
+                                </button>
+
+                                {generarPaginas().map(num => (
+                                    <button
+                                        key={num}
+                                        onClick={() => setPaginaActual(num)}
+                                        className={`w-10 h-10 text-sm font-medium rounded-lg transition ${
+                                            paginaActual === num
+                                                ? 'bg-black text-white'
+                                                : 'text-gray-700 border border-gray-300 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {num}
+                                    </button>
+                                ))}
+
+                                <button
+                                    onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
+                                    disabled={paginaActual === totalPaginas}
+                                    className="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    Siguiente →
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -198,12 +266,10 @@ export default function Home() {
                         className="bg-white rounded-t-3xl md:rounded-2xl max-w-3xl w-full flex flex-col md:flex-row overflow-hidden max-h-[92vh] md:max-h-[80vh] shadow-2xl animate-slide-up md:animate-scale-in"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Handle para móvil */}
                         <div className="md:hidden flex justify-center pt-3 pb-2 bg-white">
                             <div className="w-10 h-1 rounded-full bg-gray-300" />
                         </div>
 
-                        {/* Portada */}
                         <div className="h-52 sm:h-64 md:h-auto md:w-2/5 bg-gray-100 shrink-0">
                             {libroSeleccionado.portada_url ? (
                                 <img
@@ -218,7 +284,6 @@ export default function Home() {
                             )}
                         </div>
 
-                        {/* Info */}
                         <div className="p-5 sm:p-6 md:p-8 flex-1 overflow-y-auto relative">
                             <button
                                 onClick={() => setLibroSeleccionado(null)}

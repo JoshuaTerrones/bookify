@@ -6,6 +6,9 @@ import LibroForm from '../components/LibroForm';
 import ClienteForm from '../components/ClienteForm';
 import PedidoForm from '../components/PedidoForm';
 import Toast from '../components/Toast';
+import Pagination from '../components/Pagination';
+
+const ITEMS_POR_PAGINA = 15;
 
 interface Libro {
     id: number;
@@ -53,6 +56,12 @@ export default function Admin() {
     const [autenticado, setAutenticado] = useState<boolean | null>(null);
     const [tabActiva, setTabActiva] = useState<'libros' | 'clientes' | 'pedidos'>('libros');
     const [toast, setToast] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
+
+    const [busquedaAdmin, setBusquedaAdmin] = useState('');
+    const [paginaLibros, setPaginaLibros] = useState(1);
+    const [paginaClientes, setPaginaClientes] = useState(1);
+    const [paginaPedidos, setPaginaPedidos] = useState(1);
+
     const router = useRouter();
 
     const cargarLibros = useCallback(() => {
@@ -82,6 +91,13 @@ export default function Admin() {
             }
         });
     }, [router, cargarLibros, cargarClientes, cargarPedidos]);
+
+    // Resetear páginas al cambiar búsqueda o tab
+    useEffect(() => {
+        setPaginaLibros(1);
+        setPaginaClientes(1);
+        setPaginaPedidos(1);
+    }, [busquedaAdmin, tabActiva]);
 
     const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
         setToast({ mensaje, tipo });
@@ -121,6 +137,41 @@ export default function Admin() {
         );
     }
 
+    // === FILTRADO ===
+    const librosFiltrados = libros.filter(l =>
+        l.titulo.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
+        l.autor.toLowerCase().includes(busquedaAdmin.toLowerCase())
+    );
+
+    const clientesFiltrados = clientes.filter(c =>
+        c.nombre.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
+        c.email.toLowerCase().includes(busquedaAdmin.toLowerCase())
+    );
+
+    const pedidosFiltrados = pedidos.filter(p =>
+        p.cliente_nombre.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
+        p.detalles.some(d => d.libro_titulo?.toLowerCase().includes(busquedaAdmin.toLowerCase()))
+    );
+
+    // === PAGINACIÓN ===
+    const librosDeLaPagina = librosFiltrados.slice(
+        (paginaLibros - 1) * ITEMS_POR_PAGINA,
+        paginaLibros * ITEMS_POR_PAGINA
+    );
+    const totalPaginasLibros = Math.ceil(librosFiltrados.length / ITEMS_POR_PAGINA);
+
+    const clientesDeLaPagina = clientesFiltrados.slice(
+        (paginaClientes - 1) * ITEMS_POR_PAGINA,
+        paginaClientes * ITEMS_POR_PAGINA
+    );
+    const totalPaginasClientes = Math.ceil(clientesFiltrados.length / ITEMS_POR_PAGINA);
+
+    const pedidosDeLaPagina = pedidosFiltrados.slice(
+        (paginaPedidos - 1) * ITEMS_POR_PAGINA,
+        paginaPedidos * ITEMS_POR_PAGINA
+    );
+    const totalPaginasPedidos = Math.ceil(pedidosFiltrados.length / ITEMS_POR_PAGINA);
+
     const tabs = [
         { id: 'libros' as const, label: 'Libros', count: libros.length },
         { id: 'clientes' as const, label: 'Clientes', count: clientes.length },
@@ -142,16 +193,10 @@ export default function Admin() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <a
-                            href="/"
-                            className="text-sm text-gray-600 hover:text-gray-900 transition"
-                        >
+                        <a href="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
                             Ver catálogo
                         </a>
-                        <button
-                            onClick={handleLogout}
-                            className="text-sm text-gray-600 hover:text-red-600 transition"
-                        >
+                        <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-red-600 transition">
                             Cerrar sesión
                         </button>
                     </div>
@@ -185,16 +230,44 @@ export default function Admin() {
                     </div>
                 </div>
 
+                {/* BUSCADOR ADMIN */}
+                <div className="mb-4">
+                    <div className="relative max-w-md">
+                        <svg
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder={`Buscar en ${tabActiva}...`}
+                            value={busquedaAdmin}
+                            onChange={(e) => setBusquedaAdmin(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
+                        />
+                    </div>
+                </div>
+
                 {/* === LIBROS === */}
                 {tabActiva === 'libros' && (
                     <div>
-                        <div className="flex justify-end mb-4">
-                            <button
-                                onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
-                                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                            >
-                                + Agregar libro
-                            </button>
+                        <div className="flex items-center justify-between mb-4">
+                            {busquedaAdmin && (
+                                <p className="text-sm text-gray-500">
+                                    {librosFiltrados.length} {librosFiltrados.length === 1 ? 'resultado' : 'resultados'}
+                                </p>
+                            )}
+                            <div className="ml-auto">
+                                <button
+                                    onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
+                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                >
+                                    + Agregar libro
+                                </button>
+                            </div>
                         </div>
 
                         {mostrarFormLibro && (
@@ -215,48 +288,52 @@ export default function Admin() {
                             <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
                                 Cargando libros...
                             </div>
-                        ) : libros.length === 0 ? (
+                        ) : librosFiltrados.length === 0 ? (
                             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                                <p className="text-gray-500 mb-4">No hay libros todavía.</p>
-                                <button
-                                    onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Crear el primero
-                                </button>
+                                <p className="text-gray-500">
+                                    {busquedaAdmin ? `No hay libros para "${busquedaAdmin}".` : 'No hay libros todavía.'}
+                                </p>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                                {libros.map(libro => (
-                                    <div key={libro.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                        <div className="flex items-center gap-4 min-w-0">
-                                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 font-semibold flex-shrink-0">
-                                                {libro.titulo.charAt(0).toUpperCase()}
+                            <>
+                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                                    {librosDeLaPagina.map(libro => (
+                                        <div key={libro.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
+                                            <div className="flex items-center gap-4 min-w-0">
+                                                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 font-semibold flex-shrink-0">
+                                                    {libro.titulo.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-gray-900 truncate">{libro.titulo}</p>
+                                                    <p className="text-sm text-gray-500 truncate">
+                                                        {libro.autor} · S/ {libro.precio} · Stock: {libro.stock}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-gray-900 truncate">{libro.titulo}</p>
-                                                <p className="text-sm text-gray-500 truncate">
-                                                    {libro.autor} · S/ {libro.precio} · Stock: {libro.stock}
-                                                </p>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                <button
+                                                    onClick={() => { setLibroEditando(libro); setMostrarFormLibro(true); }}
+                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBorrarLibro(libro.id)}
+                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                >
+                                                    Borrar
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                            <button
-                                                onClick={() => { setLibroEditando(libro); setMostrarFormLibro(true); }}
-                                                className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleBorrarLibro(libro.id)}
-                                                className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                            >
-                                                Borrar
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    paginaActual={paginaLibros}
+                                    totalPaginas={totalPaginasLibros}
+                                    onCambiarPagina={setPaginaLibros}
+                                />
+                            </>
                         )}
                     </div>
                 )}
@@ -264,13 +341,20 @@ export default function Admin() {
                 {/* === CLIENTES === */}
                 {tabActiva === 'clientes' && (
                     <div>
-                        <div className="flex justify-end mb-4">
-                            <button
-                                onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
-                                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                            >
-                                + Agregar cliente
-                            </button>
+                        <div className="flex items-center justify-between mb-4">
+                            {busquedaAdmin && (
+                                <p className="text-sm text-gray-500">
+                                    {clientesFiltrados.length} {clientesFiltrados.length === 1 ? 'resultado' : 'resultados'}
+                                </p>
+                            )}
+                            <div className="ml-auto">
+                                <button
+                                    onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
+                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                >
+                                    + Agregar cliente
+                                </button>
+                            </div>
                         </div>
 
                         {mostrarFormCliente && (
@@ -287,46 +371,50 @@ export default function Admin() {
                             </div>
                         )}
 
-                        {clientes.length === 0 ? (
+                        {clientesFiltrados.length === 0 ? (
                             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                                <p className="text-gray-500 mb-4">No hay clientes todavía.</p>
-                                <button
-                                    onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Crear el primero
-                                </button>
+                                <p className="text-gray-500">
+                                    {busquedaAdmin ? `No hay clientes para "${busquedaAdmin}".` : 'No hay clientes todavía.'}
+                                </p>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                                {clientes.map(cliente => (
-                                    <div key={cliente.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                        <div className="flex items-center gap-4 min-w-0">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold flex-shrink-0">
-                                                {cliente.nombre.charAt(0).toUpperCase()}
+                            <>
+                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                                    {clientesDeLaPagina.map(cliente => (
+                                        <div key={cliente.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
+                                            <div className="flex items-center gap-4 min-w-0">
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold flex-shrink-0">
+                                                    {cliente.nombre.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-gray-900 truncate">{cliente.nombre}</p>
+                                                    <p className="text-sm text-gray-500 truncate">{cliente.email}</p>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-gray-900 truncate">{cliente.nombre}</p>
-                                                <p className="text-sm text-gray-500 truncate">{cliente.email}</p>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                <button
+                                                    onClick={() => { setClienteEditando(cliente); setMostrarFormCliente(true); }}
+                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBorrarCliente(cliente.id)}
+                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                >
+                                                    Borrar
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                            <button
-                                                onClick={() => { setClienteEditando(cliente); setMostrarFormCliente(true); }}
-                                                className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleBorrarCliente(cliente.id)}
-                                                className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                            >
-                                                Borrar
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    paginaActual={paginaClientes}
+                                    totalPaginas={totalPaginasClientes}
+                                    onCambiarPagina={setPaginaClientes}
+                                />
+                            </>
                         )}
                     </div>
                 )}
@@ -334,13 +422,20 @@ export default function Admin() {
                 {/* === PEDIDOS === */}
                 {tabActiva === 'pedidos' && (
                     <div>
-                        <div className="flex justify-end mb-4">
-                            <button
-                                onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
-                                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                            >
-                                + Agregar pedido
-                            </button>
+                        <div className="flex items-center justify-between mb-4">
+                            {busquedaAdmin && (
+                                <p className="text-sm text-gray-500">
+                                    {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? 'resultado' : 'resultados'}
+                                </p>
+                            )}
+                            <div className="ml-auto">
+                                <button
+                                    onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
+                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                >
+                                    + Agregar pedido
+                                </button>
+                            </div>
                         </div>
 
                         {mostrarFormPedido && (
@@ -357,50 +452,54 @@ export default function Admin() {
                             </div>
                         )}
 
-                        {pedidos.length === 0 ? (
+                        {pedidosFiltrados.length === 0 ? (
                             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                                <p className="text-gray-500 mb-4">No hay pedidos todavía.</p>
-                                <button
-                                    onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Crear el primero
-                                </button>
+                                <p className="text-gray-500">
+                                    {busquedaAdmin ? `No hay pedidos para "${busquedaAdmin}".` : 'No hay pedidos todavía.'}
+                                </p>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                                {pedidos.map(pedido => (
-                                    <div key={pedido.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
-                                        <div className="flex items-center gap-4 min-w-0">
-                                            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-semibold flex-shrink-0">
-                                                #{pedido.id}
+                            <>
+                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                                    {pedidosDeLaPagina.map(pedido => (
+                                        <div key={pedido.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group">
+                                            <div className="flex items-center gap-4 min-w-0">
+                                                <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 font-semibold flex-shrink-0">
+                                                    #{pedido.id}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-gray-900 truncate">
+                                                        {pedido.cliente_nombre}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 truncate">
+                                                        {pedido.detalles.map(d => `${d.cantidad}x ${d.libro_titulo}`).join(' · ')}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-gray-900 truncate">
-                                                    {pedido.cliente_nombre}
-                                                </p>
-                                                <p className="text-sm text-gray-500 truncate">
-                                                    {pedido.detalles.map(d => `${d.cantidad}x ${d.libro_titulo}`).join(' · ')}
-                                                </p>
+                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                <button
+                                                    onClick={() => { setPedidoEditando(pedido); setMostrarFormPedido(true); }}
+                                                    className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBorrarPedido(pedido.id)}
+                                                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                >
+                                                    Borrar
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                            <button
-                                                onClick={() => { setPedidoEditando(pedido); setMostrarFormPedido(true); }}
-                                                className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleBorrarPedido(pedido.id)}
-                                                className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                            >
-                                                Borrar
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    paginaActual={paginaPedidos}
+                                    totalPaginas={totalPaginasPedidos}
+                                    onCambiarPagina={setPaginaPedidos}
+                                />
+                            </>
                         )}
                     </div>
                 )}
