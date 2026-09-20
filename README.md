@@ -218,10 +218,8 @@ bookify/
 
 ---
 
-## 🔮 Próximos pasos
+## 🔮 Roadmap
 
-- [ ] Implementar CRUD de Cliente y Pedido en el panel de administración propio.
-- [ ] Añadir tests automatizados (pytest + Jest).
-- [ ] Desplegar a producción (frontend en Vercel, backend en Railway o Render).
-- [ ] Añadir roles de usuario (admin, editor, lector).
-- [ ] Mejorar el diseño visual del panel de administración.
+El progreso del proyecto y las tareas planificadas se gestionan en un tablero público de GitHub Projects:
+
+👉 **[Ver el roadmap de Bookify](https://github.com/users/JoshuaTerrones/projects/3)**
