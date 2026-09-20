@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import LibroForm from '../components/LibroForm';
 import ClienteForm from '../components/ClienteForm';
 import PedidoForm from '../components/PedidoForm';
+import Toast from '../components/Toast';
 
 interface Libro {
     id: number;
@@ -51,6 +52,7 @@ export default function Admin() {
     const [cargando, setCargando] = useState(true);
     const [autenticado, setAutenticado] = useState<boolean | null>(null);
     const [tabActiva, setTabActiva] = useState<'libros' | 'clientes' | 'pedidos'>('libros');
+    const [toast, setToast] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
     const router = useRouter();
 
     const cargarLibros = useCallback(() => {
@@ -81,22 +83,29 @@ export default function Admin() {
         });
     }, [router, cargarLibros, cargarClientes, cargarPedidos]);
 
+    const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
+        setToast({ mensaje, tipo });
+    };
+
     const handleBorrarLibro = async (id: number) => {
         if (!confirm('¿Borrar este libro?')) return;
         await fetch(`/api/libros/${id}`, { method: 'DELETE' });
         cargarLibros();
+        mostrarToast('Libro eliminado correctamente');
     };
 
     const handleBorrarCliente = async (id: number) => {
         if (!confirm('¿Borrar este cliente?')) return;
         await fetch(`/api/clientes/${id}`, { method: 'DELETE' });
         cargarClientes();
+        mostrarToast('Cliente eliminado correctamente');
     };
 
     const handleBorrarPedido = async (id: number) => {
         if (!confirm('¿Borrar este pedido?')) return;
         await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
         cargarPedidos();
+        mostrarToast('Pedido eliminado correctamente');
     };
 
     const handleLogout = async () => {
@@ -192,7 +201,11 @@ export default function Admin() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <LibroForm
                                     libroInicial={libroEditando || undefined}
-                                    onGuardado={() => { setMostrarFormLibro(false); cargarLibros(); }}
+                                    onGuardado={() => {
+                                        setMostrarFormLibro(false);
+                                        cargarLibros();
+                                        mostrarToast(libroEditando ? 'Libro actualizado' : 'Libro creado');
+                                    }}
                                     onCancelar={() => setMostrarFormLibro(false)}
                                 />
                             </div>
@@ -264,7 +277,11 @@ export default function Admin() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <ClienteForm
                                     clienteInicial={clienteEditando || undefined}
-                                    onGuardado={() => { setMostrarFormCliente(false); cargarClientes(); }}
+                                    onGuardado={() => {
+                                        setMostrarFormCliente(false);
+                                        cargarClientes();
+                                        mostrarToast(clienteEditando ? 'Cliente actualizado' : 'Cliente creado');
+                                    }}
                                     onCancelar={() => setMostrarFormCliente(false)}
                                 />
                             </div>
@@ -330,7 +347,11 @@ export default function Admin() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <PedidoForm
                                     pedidoInicial={pedidoEditando || undefined}
-                                    onGuardado={() => { setMostrarFormPedido(false); cargarPedidos(); }}
+                                    onGuardado={() => {
+                                        setMostrarFormPedido(false);
+                                        cargarPedidos();
+                                        mostrarToast(pedidoEditando ? 'Pedido actualizado' : 'Pedido creado');
+                                    }}
                                     onCancelar={() => setMostrarFormPedido(false)}
                                 />
                             </div>
@@ -384,6 +405,15 @@ export default function Admin() {
                     </div>
                 )}
             </div>
+
+            {/* TOAST */}
+            {toast && (
+                <Toast
+                    mensaje={toast.mensaje}
+                    tipo={toast.tipo}
+                    onCerrar={() => setToast(null)}
+                />
+            )}
         </main>
     );
 }
