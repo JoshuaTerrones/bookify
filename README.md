@@ -1,5 +1,7 @@
 # 📚 Bookify
 
+![Tests](https://github.com/JoshuaTerrones/bookify/actions/workflows/tests.yml/badge.svg)
+
 **Sistema de gestión de biblioteca full-stack con autenticación, panel de administración propio y API REST.**
 
 Bookify nació de una idea simple: construir un sistema completo donde los usuarios puedan ver un catálogo de libros y un administrador pueda gestionarlos desde una interfaz moderna. No es un proyecto para producción, es una demostración de que puedo construir una aplicación full-stack funcional, desde la base de datos hasta el despliegue en contenedores.
