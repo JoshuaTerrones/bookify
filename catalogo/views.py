@@ -6,10 +6,8 @@ from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
-from django.db.models import Sum, Count, F
-from django.db.models.functions import TruncMonth
+from django.db.models import Sum, Count
 from django.http import HttpResponse
-from datetime import datetime, timedelta
 from io import BytesIO
 import csv
 
@@ -200,25 +198,6 @@ class EstadisticasView(APIView):
             for item in clientes_frecuentes
         ]
 
-        # === Ingresos por mes (últimos 6 meses) ===
-        hace_6_meses = datetime.now() - timedelta(days=180)
-
-        ingresos_por_mes = DetallePedido.objects.filter(
-            pedido__fecha__gte=hace_6_meses
-        ).annotate(
-            mes=TruncMonth('pedido__fecha')
-        ).values('mes').annotate(
-            total=Sum(F('cantidad') * F('libro__precio')),
-        ).order_by('mes')
-
-        ingresos_data = [
-            {
-                'mes': item['mes'].strftime('%Y-%m') if item['mes'] else '',
-                'total': float(item['total']) if item['total'] else 0,
-            }
-            for item in ingresos_por_mes
-        ]
-
         # === Resumen general ===
         total_libros = Libro.objects.count()
         total_clientes = Cliente.objects.count()
@@ -234,7 +213,6 @@ class EstadisticasView(APIView):
             },
             'libros_mas_vendidos': libros_data,
             'clientes_frecuentes': clientes_data,
-            'ingresos_por_mes': ingresos_data,
         })
 
 
