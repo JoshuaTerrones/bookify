@@ -16,5 +16,6 @@ cookies.txt
 node_modules/
 .next/
 dist/
-.env__pycache__/
-*.pyc
+
+# Environment
+.env
