@@ -37,10 +37,16 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetch('/api/clientes').then(r => r.json()).then(setClientes);
-        fetch('/api/libros').then(r => r.json()).then(setLibros);
-    }, []);
+        fetch('/api/clientes')
+            .then(r => r.json())
+            .then(data => setClientes(Array.isArray(data) ? data : []))
+            .catch(() => setClientes([]));
 
+        fetch('/api/libros')
+            .then(r => r.json())
+            .then(data => setLibros(Array.isArray(data) ? data : []))
+            .catch(() => setLibros([]));
+    }, []);
     const agregarItem = () => {
         setDetalles([...detalles, { libro: 0, cantidad: 1 }]);
     };

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import LibroForm from '../components/LibroForm';
 import ClienteForm from '../components/ClienteForm';
 import PedidoForm from '../components/PedidoForm';
+import UsuarioForm from '../components/UsuarioForm';
 import Toast from '../components/Toast';
 import Pagination from '../components/Pagination';
 
@@ -39,6 +40,13 @@ interface Pedido {
     detalles: Detalle[];
 }
 
+interface Usuario {
+    id: number;
+    username: string;
+    email: string;
+    rol: string;
+}
+
 export default function Admin() {
     const [libros, setLibros] = useState<Libro[]>([]);
     const [mostrarFormLibro, setMostrarFormLibro] = useState(false);
@@ -52,15 +60,21 @@ export default function Admin() {
     const [mostrarFormPedido, setMostrarFormPedido] = useState(false);
     const [pedidoEditando, setPedidoEditando] = useState<Pedido | null>(null);
 
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+    const [mostrarFormUsuario, setMostrarFormUsuario] = useState(false);
+    const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
+
     const [cargando, setCargando] = useState(true);
     const [autenticado, setAutenticado] = useState<boolean | null>(null);
-    const [tabActiva, setTabActiva] = useState<'libros' | 'clientes' | 'pedidos'>('libros');
+    const [rolUsuario, setRolUsuario] = useState<string>('');
+    const [tabActiva, setTabActiva] = useState<'libros' | 'clientes' | 'pedidos' | 'usuarios'>('libros');
     const [toast, setToast] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
 
     const [busquedaAdmin, setBusquedaAdmin] = useState('');
     const [paginaLibros, setPaginaLibros] = useState(1);
     const [paginaClientes, setPaginaClientes] = useState(1);
     const [paginaPedidos, setPaginaPedidos] = useState(1);
+    const [paginaUsuarios, setPaginaUsuarios] = useState(1);
 
     const [mostrarFiltros, setMostrarFiltros] = useState(false);
     const [precioMin, setPrecioMin] = useState('');
@@ -70,19 +84,42 @@ export default function Admin() {
 
     const router = useRouter();
 
+    // === PERMISOS POR ROL ===
+    const esAdmin = rolUsuario === 'admin';
+    const puedeEditar = rolUsuario === 'admin' || rolUsuario === 'editor';
+
     const cargarLibros = useCallback(() => {
-        fetch('/api/libros').then(r => r.json()).then(data => {
-            setLibros(data);
-            setCargando(false);
-        });
+        fetch('/api/libros')
+            .then(r => r.json())
+            .then(data => {
+                setLibros(Array.isArray(data) ? data : []);
+                setCargando(false);
+            })
+            .catch(() => {
+                setLibros([]);
+                setCargando(false);
+            });
     }, []);
 
     const cargarClientes = useCallback(() => {
-        fetch('/api/clientes').then(r => r.json()).then(setClientes);
+        fetch('/api/clientes')
+            .then(r => r.json())
+            .then(data => setClientes(Array.isArray(data) ? data : []))
+            .catch(() => setClientes([]));
     }, []);
 
     const cargarPedidos = useCallback(() => {
-        fetch('/api/pedidos').then(r => r.json()).then(setPedidos);
+        fetch('/api/pedidos')
+            .then(r => r.json())
+            .then(data => setPedidos(Array.isArray(data) ? data : []))
+            .catch(() => setPedidos([]));
+    }, []);
+
+    const cargarUsuarios = useCallback(() => {
+        fetch('/api/usuarios')
+            .then(r => r.json())
+            .then(data => setUsuarios(Array.isArray(data) ? data : []))
+            .catch(() => setUsuarios([]));
     }, []);
 
     useEffect(() => {
@@ -91,17 +128,22 @@ export default function Admin() {
                 router.push('/login');
             } else {
                 setAutenticado(true);
+                setRolUsuario(d.rol || '');
                 cargarLibros();
                 cargarClientes();
                 cargarPedidos();
+                if (d.rol === 'admin') {
+                    cargarUsuarios();
+                }
             }
         });
-    }, [router, cargarLibros, cargarClientes, cargarPedidos]);
+    }, [router, cargarLibros, cargarClientes, cargarPedidos, cargarUsuarios]);
 
     useEffect(() => {
         setPaginaLibros(1);
         setPaginaClientes(1);
         setPaginaPedidos(1);
+        setPaginaUsuarios(1);
     }, [busquedaAdmin, tabActiva, precioMin, precioMax, filtroStock, autorFiltro]);
 
     const autoresUnicos = useMemo(() => {
@@ -140,6 +182,21 @@ export default function Admin() {
         await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
         cargarPedidos();
         mostrarToast('Pedido eliminado correctamente');
+    };
+
+    const handleBorrarUsuario = async (id: number, username: string) => {
+        if (username === 'root') {
+            mostrarToast('No se puede eliminar el usuario root', 'error');
+            return;
+        }
+        if (!confirm(`¿Borrar el usuario "${username}"?`)) return;
+        const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            cargarUsuarios();
+            mostrarToast('Usuario eliminado correctamente');
+        } else {
+            mostrarToast('Error al eliminar el usuario', 'error');
+        }
     };
 
     const handleLogout = async () => {
@@ -187,6 +244,11 @@ export default function Admin() {
         p.detalles.some(d => d.libro_titulo?.toLowerCase().includes(busquedaAdmin.toLowerCase()))
     );
 
+    const usuariosFiltrados = usuarios.filter(u =>
+        u.username.toLowerCase().includes(busquedaAdmin.toLowerCase()) ||
+        u.email.toLowerCase().includes(busquedaAdmin.toLowerCase())
+    );
+
     const librosDeLaPagina = librosFiltrados.slice(
         (paginaLibros - 1) * ITEMS_POR_PAGINA,
         paginaLibros * ITEMS_POR_PAGINA
@@ -205,14 +267,33 @@ export default function Admin() {
     );
     const totalPaginasPedidos = Math.ceil(pedidosFiltrados.length / ITEMS_POR_PAGINA);
 
+    const usuariosDeLaPagina = usuariosFiltrados.slice(
+        (paginaUsuarios - 1) * ITEMS_POR_PAGINA,
+        paginaUsuarios * ITEMS_POR_PAGINA
+    );
+    const totalPaginasUsuarios = Math.ceil(usuariosFiltrados.length / ITEMS_POR_PAGINA);
+
     const tabs = [
         { id: 'libros' as const, label: 'Libros', count: libros.length },
         { id: 'clientes' as const, label: 'Clientes', count: clientes.length },
         { id: 'pedidos' as const, label: 'Pedidos', count: pedidos.length },
+        ...(esAdmin
+            ? [{ id: 'usuarios' as const, label: 'Usuarios', count: usuarios.length }]
+            : []),
     ];
 
     const inputFiltroClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition";
     const labelFiltroClass = "block text-xs font-medium text-gray-600 mb-1.5";
+
+    const rolBadge = (rol: string) => {
+        const colores: Record<string, string> = {
+            admin: 'bg-red-50 text-red-700',
+            editor: 'bg-amber-50 text-amber-700',
+            lector: 'bg-blue-50 text-blue-700',
+            sin_rol: 'bg-gray-100 text-gray-600',
+        };
+        return colores[rol] || colores.sin_rol;
+    };
 
     return (
         <main className="min-h-screen bg-gray-50">
@@ -225,7 +306,14 @@ export default function Admin() {
                         </div>
                         <div>
                             <h1 className="text-lg font-semibold text-gray-900">Bookify Admin</h1>
-                            <p className="text-xs text-gray-500">Panel de administración</p>
+                            <p className="text-xs text-gray-500">
+                                Panel de administración
+                                {rolUsuario && (
+                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide ${rolBadge(rolUsuario)}`}>
+                                        {rolUsuario}
+                                    </span>
+                                )}
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 sm:gap-3">
@@ -240,6 +328,13 @@ export default function Admin() {
             </header>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+                {/* AVISO PARA LECTORES */}
+                {rolUsuario === 'lector' && (
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm mb-6">
+                        Estás en modo <strong>lector</strong>. Puedes ver la información pero no modificarla.
+                    </div>
+                )}
+
                 {/* TABS */}
                 <div className="border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-1 min-w-max">
@@ -396,17 +491,19 @@ export default function Admin() {
                                     {librosFiltrados.length} {librosFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
-                            <div className="ml-auto">
-                                <button
-                                    onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Agregar libro
-                                </button>
-                            </div>
+                            {puedeEditar && (
+                                <div className="ml-auto">
+                                    <button
+                                        onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
+                                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                    >
+                                        + Agregar libro
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {mostrarFormLibro && (
+                        {mostrarFormLibro && puedeEditar && (
                             <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <LibroForm
                                     libroInicial={libroEditando || undefined}
@@ -456,20 +553,26 @@ export default function Admin() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                <button
-                                                    onClick={() => { setLibroEditando(libro); setMostrarFormLibro(true); }}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBorrarLibro(libro.id)}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                >
-                                                    Borrar
-                                                </button>
-                                            </div>
+                                            {(puedeEditar || esAdmin) && (
+                                                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                    {puedeEditar && (
+                                                        <button
+                                                            onClick={() => { setLibroEditando(libro); setMostrarFormLibro(true); }}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {esAdmin && (
+                                                        <button
+                                                            onClick={() => handleBorrarLibro(libro.id)}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                        >
+                                                            Borrar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -493,17 +596,19 @@ export default function Admin() {
                                     {clientesFiltrados.length} {clientesFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
-                            <div className="ml-auto">
-                                <button
-                                    onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Agregar cliente
-                                </button>
-                            </div>
+                            {puedeEditar && (
+                                <div className="ml-auto">
+                                    <button
+                                        onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
+                                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                    >
+                                        + Agregar cliente
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {mostrarFormCliente && (
+                        {mostrarFormCliente && puedeEditar && (
                             <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <ClienteForm
                                     clienteInicial={clienteEditando || undefined}
@@ -537,20 +642,26 @@ export default function Admin() {
                                                     <p className="text-sm text-gray-500 truncate">{cliente.email}</p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                <button
-                                                    onClick={() => { setClienteEditando(cliente); setMostrarFormCliente(true); }}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBorrarCliente(cliente.id)}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                >
-                                                    Borrar
-                                                </button>
-                                            </div>
+                                            {(puedeEditar || esAdmin) && (
+                                                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                    {puedeEditar && (
+                                                        <button
+                                                            onClick={() => { setClienteEditando(cliente); setMostrarFormCliente(true); }}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {esAdmin && (
+                                                        <button
+                                                            onClick={() => handleBorrarCliente(cliente.id)}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                        >
+                                                            Borrar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -574,17 +685,19 @@ export default function Admin() {
                                     {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
-                            <div className="ml-auto">
-                                <button
-                                    onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
-                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
-                                >
-                                    + Agregar pedido
-                                </button>
-                            </div>
+                            {puedeEditar && (
+                                <div className="ml-auto">
+                                    <button
+                                        onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
+                                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                    >
+                                        + Agregar pedido
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {mostrarFormPedido && (
+                        {mostrarFormPedido && puedeEditar && (
                             <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
                                 <PedidoForm
                                     pedidoInicial={pedidoEditando || undefined}
@@ -622,20 +735,26 @@ export default function Admin() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                <button
-                                                    onClick={() => { setPedidoEditando(pedido); setMostrarFormPedido(true); }}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBorrarPedido(pedido.id)}
-                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                >
-                                                    Borrar
-                                                </button>
-                                            </div>
+                                            {(puedeEditar || esAdmin) && (
+                                                <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                    {puedeEditar && (
+                                                        <button
+                                                            onClick={() => { setPedidoEditando(pedido); setMostrarFormPedido(true); }}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {esAdmin && (
+                                                        <button
+                                                            onClick={() => handleBorrarPedido(pedido.id)}
+                                                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                        >
+                                                            Borrar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -644,6 +763,97 @@ export default function Admin() {
                                     paginaActual={paginaPedidos}
                                     totalPaginas={totalPaginasPedidos}
                                     onCambiarPagina={setPaginaPedidos}
+                                />
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {/* === USUARIOS === */}
+                {tabActiva === 'usuarios' && esAdmin && (
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            {busquedaAdmin && (
+                                <p className="text-sm text-gray-500">
+                                    {usuariosFiltrados.length} {usuariosFiltrados.length === 1 ? 'resultado' : 'resultados'}
+                                </p>
+                            )}
+                            <div className="ml-auto">
+                                <button
+                                    onClick={() => { setUsuarioEditando(null); setMostrarFormUsuario(true); }}
+                                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
+                                >
+                                    + Agregar usuario
+                                </button>
+                            </div>
+                        </div>
+
+                        {mostrarFormUsuario && (
+                            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 mb-4">
+                                <UsuarioForm
+                                    usuarioInicial={usuarioEditando || undefined}
+                                    onGuardado={() => {
+                                        setMostrarFormUsuario(false);
+                                        cargarUsuarios();
+                                        mostrarToast(usuarioEditando ? 'Usuario actualizado' : 'Usuario creado');
+                                    }}
+                                    onCancelar={() => setMostrarFormUsuario(false)}
+                                />
+                            </div>
+                        )}
+
+                        {usuariosFiltrados.length === 0 ? (
+                            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                                <p className="text-gray-500">
+                                    {busquedaAdmin ? `No hay usuarios para "${busquedaAdmin}".` : 'No hay usuarios todavía.'}
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+                                    {usuariosDeLaPagina.map(usuario => (
+                                        <div key={usuario.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition group gap-2">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-semibold flex-shrink-0">
+                                                    {usuario.username.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-gray-900 truncate">
+                                                        {usuario.username}
+                                                        {usuario.username === 'root' && (
+                                                            <span className="ml-2 text-xs text-gray-400">(superusuario)</span>
+                                                        )}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 truncate">{usuario.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide ${rolBadge(usuario.rol)}`}>
+                                                    {usuario.rol}
+                                                </span>
+                                                <button
+                                                    onClick={() => { setUsuarioEditando(usuario); setMostrarFormUsuario(true); }}
+                                                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                                                >
+                                                    Editar
+                                                </button>
+                                                {usuario.username !== 'root' && (
+                                                    <button
+                                                        onClick={() => handleBorrarUsuario(usuario.id, usuario.username)}
+                                                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    >
+                                                        Borrar
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    paginaActual={paginaUsuarios}
+                                    totalPaginas={totalPaginasUsuarios}
+                                    onCambiarPagina={setPaginaUsuarios}
                                 />
                             </>
                         )}

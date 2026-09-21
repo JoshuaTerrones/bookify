@@ -33,7 +33,11 @@ export default function Home() {
         fetch('/api/libros')
             .then((res) => res.json())
             .then((data) => {
-                setLibros(data);
+                setLibros(Array.isArray(data) ? data : []);
+                setCargando(false);
+            })
+            .catch(() => {
+                setLibros([]);
                 setCargando(false);
             });
     }, []);
