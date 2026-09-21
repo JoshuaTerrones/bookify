@@ -47,15 +47,19 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
             .then(data => setLibros(Array.isArray(data) ? data : []))
             .catch(() => setLibros([]));
     }, []);
+
     const agregarItem = () => {
+        setError('');
         setDetalles([...detalles, { libro: 0, cantidad: 1 }]);
     };
 
     const quitarItem = (index: number) => {
+        setError('');
         setDetalles(detalles.filter((_, i) => i !== index));
     };
 
     const cambiarItem = (index: number, campo: 'libro' | 'cantidad', valor: number) => {
+        setError('');
         const nuevos = [...detalles];
         nuevos[index] = { ...nuevos[index], [campo]: valor };
         setDetalles(nuevos);
@@ -118,7 +122,7 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                 <select
                     id="cliente"
                     value={cliente}
-                    onChange={(e) => setCliente(e.target.value)}
+                    onChange={(e) => { setCliente(e.target.value); setError(''); }}
                     required
                     className={inputClass}
                 >
@@ -155,7 +159,7 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                                 onChange={(e) => cambiarItem(index, 'libro', parseInt(e.target.value))}
                                 required
                                 aria-label={`Libro del item ${index + 1}`}
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+                                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
                             >
                                 <option value={0}>-- Selecciona un libro --</option>
                                 {libros.map(l => (
@@ -169,12 +173,12 @@ export default function PedidoForm({ pedidoInicial, onGuardado, onCancelar }: Pe
                                 onChange={(e) => cambiarItem(index, 'cantidad', parseInt(e.target.value))}
                                 required
                                 aria-label={`Cantidad del item ${index + 1}`}
-                                className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
+                                className="w-16 sm:w-20 shrink-0 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition"
                             />
                             <button
                                 type="button"
                                 onClick={() => quitarItem(index)}
-                                className="px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                className="shrink-0 px-3 py-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                                 aria-label="Quitar"
                             >
                                 ✕
