@@ -1,0 +1,12 @@
+const API_URL = process.env.API_URL || 'http://127.0.0.1:8000';
+
+export async function GET(req: Request) {
+    const cookie = req.headers.get('cookie') || '';
+
+    const res = await fetch(`${API_URL}/api/estadisticas/`, {
+        cache: 'no-store',
+        headers: { cookie },
+    });
+    const data = await res.json();
+    return Response.json(data, { status: res.status });
+}

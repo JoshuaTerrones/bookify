@@ -6,6 +6,7 @@ import LibroForm from '../components/LibroForm';
 import ClienteForm from '../components/ClienteForm';
 import PedidoForm from '../components/PedidoForm';
 import UsuarioForm from '../components/UsuarioForm';
+import Dashboard from '../components/Dashboard';
 import Toast from '../components/Toast';
 import Pagination from '../components/Pagination';
 
@@ -67,7 +68,7 @@ export default function Admin() {
     const [cargando, setCargando] = useState(true);
     const [autenticado, setAutenticado] = useState<boolean | null>(null);
     const [rolUsuario, setRolUsuario] = useState<string>('');
-    const [tabActiva, setTabActiva] = useState<'libros' | 'clientes' | 'pedidos' | 'usuarios'>('libros');
+    const [tabActiva, setTabActiva] = useState<'dashboard' | 'libros' | 'clientes' | 'pedidos' | 'usuarios'>('dashboard');
     const [toast, setToast] = useState<{ mensaje: string; tipo: 'success' | 'error' } | null>(null);
 
     const [busquedaAdmin, setBusquedaAdmin] = useState('');
@@ -274,6 +275,9 @@ export default function Admin() {
     const totalPaginasUsuarios = Math.ceil(usuariosFiltrados.length / ITEMS_POR_PAGINA);
 
     const tabs = [
+        ...(esAdmin
+            ? [{ id: 'dashboard' as const, label: 'Dashboard', count: 0 }]
+            : []),
         { id: 'libros' as const, label: 'Libros', count: libros.length },
         { id: 'clientes' as const, label: 'Clientes', count: clientes.length },
         { id: 'pedidos' as const, label: 'Pedidos', count: pedidos.length },
@@ -349,61 +353,65 @@ export default function Admin() {
                                 }`}
                             >
                                 {tab.label}
-                                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                                    tabActiva === tab.id
-                                        ? 'bg-black text-white'
-                                        : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                    {tab.count}
-                                </span>
+                                {tab.count > 0 && (
+                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                                        tabActiva === tab.id
+                                            ? 'bg-black text-white'
+                                            : 'bg-gray-100 text-gray-600'
+                                    }`}>
+                                        {tab.count}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* BUSCADOR Y FILTROS */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                    <div className="relative flex-1 max-w-md">
-                        <svg
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder={`Buscar en ${tabActiva}...`}
-                            value={busquedaAdmin}
-                            onChange={(e) => setBusquedaAdmin(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
-                        />
-                    </div>
-
-                    {tabActiva === 'libros' && (
-                        <button
-                            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                            className={`px-4 py-2 rounded-lg font-medium transition text-sm flex items-center justify-center gap-2 ${
-                                mostrarFiltros || filtrosActivos > 0
-                                    ? 'bg-black text-white'
-                                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                            }`}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                {tabActiva !== 'dashboard' && (
+                    <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                        <div className="relative flex-1 max-w-md">
+                            <svg
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            Filtros
-                            {filtrosActivos > 0 && (
-                                <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                                    mostrarFiltros || filtrosActivos > 0 ? 'bg-white text-black' : 'bg-black text-white'
-                                }`}>
-                                    {filtrosActivos}
-                                </span>
-                            )}
-                        </button>
-                    )}
-                </div>
+                            <input
+                                type="text"
+                                placeholder={`Buscar en ${tabActiva}...`}
+                                value={busquedaAdmin}
+                                onChange={(e) => setBusquedaAdmin(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition text-sm"
+                            />
+                        </div>
+
+                        {tabActiva === 'libros' && (
+                            <button
+                                onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                                className={`px-4 py-2 rounded-lg font-medium transition text-sm flex items-center justify-center gap-2 ${
+                                    mostrarFiltros || filtrosActivos > 0
+                                        ? 'bg-black text-white'
+                                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                Filtros
+                                {filtrosActivos > 0 && (
+                                    <span className={`px-1.5 py-0.5 rounded-full text-xs ${
+                                        mostrarFiltros || filtrosActivos > 0 ? 'bg-white text-black' : 'bg-black text-white'
+                                    }`}>
+                                        {filtrosActivos}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* PANEL DE FILTROS */}
                 {tabActiva === 'libros' && mostrarFiltros && (
@@ -480,6 +488,11 @@ export default function Admin() {
                             </button>
                         )}
                     </div>
+                )}
+
+                {/* === DASHBOARD === */}
+                {tabActiva === 'dashboard' && esAdmin && (
+                    <Dashboard />
                 )}
 
                 {/* === LIBROS === */}
