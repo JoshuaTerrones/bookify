@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react';
 import {
     BarChart,
     Bar,
-    LineChart,
-    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -33,16 +31,10 @@ interface ClienteFrecuente {
     pedidos: number;
 }
 
-interface IngresoMes {
-    mes: string;
-    total: number;
-}
-
 interface Estadisticas {
     resumen: Resumen;
     libros_mas_vendidos: LibroVendido[];
     clientes_frecuentes: ClienteFrecuente[];
-    ingresos_por_mes: IngresoMes[];
 }
 
 export default function Dashboard() {
@@ -154,40 +146,6 @@ export default function Dashboard() {
                             />
                             <Bar dataKey="pedidos" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                         </BarChart>
-                    </ResponsiveContainer>
-                )}
-            </div>
-
-            {/* Ingresos por mes */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-base font-semibold text-gray-900 mb-4">
-                    Ingresos por mes (últimos 6 meses)
-                </h3>
-                {datos.ingresos_por_mes.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-8">
-                        Aún no hay ingresos registrados.
-                    </p>
-                ) : (
-                    <ResponsiveContainer width="100%" height={280}>
-                        <LineChart data={datos.ingresos_por_mes}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                            <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#6b7280' }} />
-                            <YAxis
-                                tick={{ fontSize: 11, fill: '#6b7280' }}
-                                tickFormatter={(value) => `S/ ${value}`}
-                            />
-                            <Tooltip
-                                contentStyle={{ fontSize: 12, borderRadius: 8 }}
-                                formatter={(value) => [`S/ ${Number(value).toFixed(2)}`, 'Ingresos']}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="total"
-                                stroke="#10b981"
-                                strokeWidth={2}
-                                dot={{ r: 4 }}
-                            />
-                        </LineChart>
                     </ResponsiveContainer>
                 )}
             </div>

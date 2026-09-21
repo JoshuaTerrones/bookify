@@ -66,7 +66,7 @@ Bookify es una aplicación full-stack de gestión de biblioteca con:
 - Pedidos con items anidados: cada pedido puede tener varios libros con cantidades.
 - Validación de stock: no se puede pedir más cantidad de la disponible.
 - Descuento y devolución automática de stock al crear, editar o borrar pedidos.
-- **Dashboard de estadísticas** con gráficos (Recharts): resumen general, top 5 libros más vendidos, top 5 clientes con más pedidos, ingresos por mes.
+- **Dashboard de estadísticas** con gráficos (Recharts): resumen general, top 5 libros más vendidos y top 5 clientes con más pedidos.
 - Pestaña de Usuarios para crear usuarios y asignarles rol.
 - Filtros y búsqueda en cada pestaña.
 - Paginación de 15 items por página.
