@@ -41,7 +41,7 @@ Bookify es una aplicación full-stack de gestión de biblioteca con:
 
 | Catálogo público | Panel de administración |
 |:---:|:---:|
-| ![Catálogo](docs/catalogo.png) | ![Panel admin](docs/sd.png) |
+| ![Catálogo](docs/catalogo.png) | ![Panel admin](docs/admin.png) |
 
 | Modal de detalles | Login |
 |:---:|:---:|
