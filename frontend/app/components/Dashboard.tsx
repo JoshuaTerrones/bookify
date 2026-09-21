@@ -15,7 +15,8 @@ interface Resumen {
     total_libros: number;
     total_clientes: number;
     total_pedidos: number;
-    stock_bajo: number;
+    agotados: number;
+    por_agotarse: number;
 }
 
 interface LibroVendido {
@@ -78,13 +79,14 @@ export default function Dashboard() {
         { label: 'Total libros', value: datos.resumen.total_libros, color: 'bg-blue-50 text-blue-700' },
         { label: 'Total clientes', value: datos.resumen.total_clientes, color: 'bg-green-50 text-green-700' },
         { label: 'Total pedidos', value: datos.resumen.total_pedidos, color: 'bg-amber-50 text-amber-700' },
-        { label: 'Stock bajo', value: datos.resumen.stock_bajo, color: 'bg-red-50 text-red-700' },
+        { label: 'Libros agotados', value: datos.resumen.agotados, color: 'bg-red-50 text-red-700' },
+        { label: 'Por agotarse (1-4 uds)', value: datos.resumen.por_agotarse, color: 'bg-orange-50 text-orange-700' },
     ];
 
     return (
         <div className="space-y-6">
             {/* Tarjetas de resumen */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 {tarjetas.map(t => (
                     <div key={t.label} className={`rounded-xl p-4 sm:p-5 ${t.color}`}>
                         <p className="text-xs font-medium uppercase tracking-wide opacity-80">

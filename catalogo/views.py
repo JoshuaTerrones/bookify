@@ -202,14 +202,15 @@ class EstadisticasView(APIView):
         total_libros = Libro.objects.count()
         total_clientes = Cliente.objects.count()
         total_pedidos = Pedido.objects.count()
-        stock_bajo = Libro.objects.filter(stock__lt=5).count()
-
+        agotados = Libro.objects.filter(stock=0).count()
+        por_agotarse = Libro.objects.filter(stock__gt=0, stock__lt=5).count()
         return Response({
             'resumen': {
                 'total_libros': total_libros,
                 'total_clientes': total_clientes,
                 'total_pedidos': total_pedidos,
-                'stock_bajo': stock_bajo,
+                'agotados': agotados,
+                'por_agotarse': por_agotarse,
             },
             'libros_mas_vendidos': libros_data,
             'clientes_frecuentes': clientes_data,
