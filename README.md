@@ -4,7 +4,25 @@
 
 **Sistema de gestión de biblioteca full-stack con autenticación, roles de usuario, dashboard de estadísticas y API REST.**
 
-Bookify es una aplicación completa donde los usuarios pueden explorar un catálogo de libros y los administradores pueden gestionar libros, clientes y pedidos desde un panel propio. Está **desplegado en producción** y también se puede levantar localmente con Docker.
+---
+
+## 🚀 Quick overview
+
+Bookify es una aplicación full-stack de gestión de biblioteca con:
+
+- **449 libros reales** cargados desde la API de Open Library
+- **Panel de administración propio** (no el de Django) con 5 pestañas: Dashboard, Libros, Clientes, Pedidos, Usuarios
+- **Sistema de roles** con permisos diferenciados: admin, editor y lector
+- **Dashboard de estadísticas** con gráficos (Recharts)
+- **Exportación a CSV y PDF** de libros, clientes y pedidos
+- **19 tests automatizados** + CI/CD con GitHub Actions
+- **Desplegado en producción** (Vercel + Render + Neon)
+
+| 🎯 Demo | 🛠️ Stack |
+|:---:|:---:|
+| [bookify-blond-two.vercel.app](https://bookify-blond-two.vercel.app) | Django · Next.js · Docker · PostgreSQL |
+
+**Credenciales de prueba:** usuario `root` — contraseña `root`.
 
 ---
 
@@ -16,8 +34,6 @@ Bookify es una aplicación completa donde los usuarios pueden explorar un catál
 | **Backend API (Render)** | https://bookify-zryf.onrender.com |
 | **Admin Django** | https://bookify-zryf.onrender.com/admin/ |
 | **Repositorio** | https://github.com/JoshuaTerrones/bookify |
-
-**Credenciales de prueba:** usuario `root` — contraseña `root`.
 
 ---
 
@@ -36,32 +52,29 @@ Bookify es una aplicación completa donde los usuarios pueden explorar un catál
 ## ✨ Características
 
 ### Catálogo público
-- **449 libros reales** obtenidos desde la API de Open Library.
-- **Búsqueda por título o autor** en tiempo real.
-- **Ordenamiento** por autor (A-Z), precio (menor a mayor) y fecha (más reciente).
-- **Filtros avanzados:** rango de precio, autor específico y disponibilidad de stock.
-- **Paginación** de 12 libros por página.
-- **Modal de detalles** con descripción en vivo desde Open Library.
-- **Diseño responsive** optimizado para móvil, tablet y desktop.
-- **Animaciones suaves** (fade-in, slide-up, scale-in).
+- 449 libros reales obtenidos desde la API de Open Library.
+- Búsqueda por título o autor en tiempo real.
+- Ordenamiento por autor (A-Z), precio (menor a mayor) y fecha (más reciente).
+- Filtros avanzados: rango de precio, autor específico y disponibilidad de stock.
+- Paginación de 12 libros por página.
+- Modal de detalles con descripción en vivo desde Open Library.
+- Diseño responsive optimizado para móvil, tablet y desktop.
+- Animaciones suaves (fade-in, slide-up, scale-in).
 
 ### Panel de administración
-- **CRUD completo de Libros, Clientes y Pedidos** desde una interfaz propia en React.
-- **Pedidos con items anidados:** cada pedido puede tener varios libros con cantidades.
-- **Validación de stock:** no se puede pedir más cantidad de la disponible.
-- **Descuento y devolución automática de stock** al crear, editar o borrar pedidos.
-- **Dashboard de estadísticas** con gráficos (Recharts):
-  - Resumen general: libros, clientes, pedidos, stock bajo.
-  - Top 5 libros más vendidos.
-  - Top 5 clientes con más pedidos.
-  - Ingresos por mes (últimos 6 meses).
-- **Pestaña de Usuarios** para crear usuarios y asignarles rol.
-- **Filtros y búsqueda** en cada pestaña.
-- **Paginación** de 15 items por página.
-- **Exportación a CSV y PDF** de libros, clientes y pedidos.
-- **Feedback visual con toasts** en cada acción.
+- CRUD completo de Libros, Clientes y Pedidos desde una interfaz propia en React.
+- Pedidos con items anidados: cada pedido puede tener varios libros con cantidades.
+- Validación de stock: no se puede pedir más cantidad de la disponible.
+- Descuento y devolución automática de stock al crear, editar o borrar pedidos.
+- **Dashboard de estadísticas** con gráficos (Recharts): resumen general, top 5 libros más vendidos, top 5 clientes con más pedidos, ingresos por mes.
+- Pestaña de Usuarios para crear usuarios y asignarles rol.
+- Filtros y búsqueda en cada pestaña.
+- Paginación de 15 items por página.
+- Exportación a CSV y PDF de libros, clientes y pedidos.
+- Feedback visual con toasts en cada acción.
 
 ### Roles de usuario
+
 | Rol | Ver | Crear | Editar | Borrar | Usuarios |
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | **admin** | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -78,10 +91,10 @@ La UI se adapta al rol: el editor no ve los botones de borrar, y el lector solo 
 - SSL obligatorio en la conexión a PostgreSQL de producción.
 
 ### Infraestructura
-- **Containerización total:** todo el stack se levanta con un solo comando.
-- **CI/CD:** tests automáticos con GitHub Actions en cada push.
-- **Keep-alive:** el backend se mantiene despierto con UptimeRobot.
-- **Imagen Docker pública** en GitHub Container Registry.
+- Containerización total: todo el stack se levanta con un solo comando.
+- CI/CD: tests automáticos con GitHub Actions en cada push.
+- Keep-alive: el backend se mantiene despierto con UptimeRobot.
+- Imagen Docker pública en GitHub Container Registry.
 
 ---
 
@@ -108,7 +121,7 @@ La UI se adapta al rol: el editor no ve los botones de borrar, y el lector solo 
 - Jest · Testing Library (frontend, 3 tests)
 
 **Herramientas de desarrollo**
-- GitHub CLI (`gh`) · Git · Figma
+- GitHub CLI (gh) · Git · Figma
 
 ---
 
@@ -141,14 +154,15 @@ docker-compose up --build
 ```
 
 Docker se encarga de:
+
 1. Levantar PostgreSQL 16.
 2. Aplicar migraciones.
-3. Crear los grupos de permisos (`admin`, `editor`, `lector`).
-4. Crear el superusuario `root`.
+3. Crear los grupos de permisos (admin, editor, lector).
+4. Crear el superusuario root.
 5. Poblar la base de datos con libros desde Open Library (solo si está vacía).
 6. Iniciar el backend con Gunicorn y el frontend con Next.js.
 
-**La primera vez** tarda unos minutos porque descarga imágenes y dependencias. Las siguientes veces es casi instantáneo.
+La primera vez tarda unos minutos porque descarga imágenes y dependencias. Las siguientes veces es casi instantáneo.
 
 ---
 
@@ -160,7 +174,7 @@ Docker se encarga de:
 |:---|:---|:---|
 | Catálogo público | http://localhost:3000 | Sin login |
 | Panel de administración | http://localhost:3000/admin | Requiere login |
-| Login | http://localhost:3000/login | Usuario: `root` — Contraseña: `root` |
+| Login | http://localhost:3000/login | Usuario: root — Contraseña: root |
 | API REST | http://localhost:8000/api/libros/ | Devuelve JSON |
 | Admin nativo de Django | http://localhost:8000/admin/ | Panel genérico de Django |
 
@@ -184,52 +198,52 @@ Todas las rutas están bajo el prefijo `/api/`. La autenticación se maneja con 
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/libros/` | Lista todos los libros | Público |
-| `POST` | `/api/libros/` | Crea un libro | Autenticado + permiso |
-| `GET` | `/api/libros/{id}/` | Obtiene un libro | Público |
-| `PUT` | `/api/libros/{id}/` | Actualiza un libro | Autenticado + permiso |
-| `PATCH` | `/api/libros/{id}/` | Actualiza parcialmente | Autenticado + permiso |
-| `DELETE` | `/api/libros/{id}/` | Elimina un libro | Autenticado + permiso |
+| GET | /api/libros/ | Lista todos los libros | Público |
+| POST | /api/libros/ | Crea un libro | Autenticado + permiso |
+| GET | /api/libros/{id}/ | Obtiene un libro | Público |
+| PUT | /api/libros/{id}/ | Actualiza un libro | Autenticado + permiso |
+| PATCH | /api/libros/{id}/ | Actualiza parcialmente | Autenticado + permiso |
+| DELETE | /api/libros/{id}/ | Elimina un libro | Autenticado + permiso |
 
 ### Clientes
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/clientes/` | Lista clientes | Autenticado |
-| `POST` | `/api/clientes/` | Crea un cliente | Autenticado + permiso |
-| `PUT` | `/api/clientes/{id}/` | Actualiza un cliente | Autenticado + permiso |
-| `DELETE` | `/api/clientes/{id}/` | Elimina un cliente | Autenticado + permiso |
+| GET | /api/clientes/ | Lista clientes | Autenticado |
+| POST | /api/clientes/ | Crea un cliente | Autenticado + permiso |
+| PUT | /api/clientes/{id}/ | Actualiza un cliente | Autenticado + permiso |
+| DELETE | /api/clientes/{id}/ | Elimina un cliente | Autenticado + permiso |
 
 ### Pedidos
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/pedidos/` | Lista pedidos con detalles | Público |
-| `POST` | `/api/pedidos/` | Crea un pedido con items | Autenticado + permiso |
-| `PUT` | `/api/pedidos/{id}/` | Actualiza pedido y detalles | Autenticado + permiso |
-| `DELETE` | `/api/pedidos/{id}/` | Elimina y devuelve stock | Autenticado + permiso |
+| GET | /api/pedidos/ | Lista pedidos con detalles | Público |
+| POST | /api/pedidos/ | Crea un pedido con items | Autenticado + permiso |
+| PUT | /api/pedidos/{id}/ | Actualiza pedido y detalles | Autenticado + permiso |
+| DELETE | /api/pedidos/{id}/ | Elimina y devuelve stock | Autenticado + permiso |
 
 ### Usuarios
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/usuarios/` | Lista usuarios con su rol | Solo admin |
-| `POST` | `/api/usuarios/` | Crea un usuario | Solo admin |
-| `PUT` | `/api/usuarios/{id}/` | Actualiza usuario y rol | Solo admin |
-| `DELETE` | `/api/usuarios/{id}/` | Elimina un usuario | Solo admin |
+| GET | /api/usuarios/ | Lista usuarios con su rol | Solo admin |
+| POST | /api/usuarios/ | Crea un usuario | Solo admin |
+| PUT | /api/usuarios/{id}/ | Actualiza usuario y rol | Solo admin |
+| DELETE | /api/usuarios/{id}/ | Elimina un usuario | Solo admin |
 
 ### Estadísticas
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/estadisticas/` | Resumen + gráficos | Solo admin |
+| GET | /api/estadisticas/ | Resumen + gráficos | Solo admin |
 
 ### Exportación
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `GET` | `/api/exportar/{recurso}/csv/` | Descarga CSV | Autenticado |
-| `GET` | `/api/exportar/{recurso}/pdf/` | Descarga PDF | Autenticado |
+| GET | /api/exportar/{recurso}/csv/ | Descarga CSV | Autenticado |
+| GET | /api/exportar/{recurso}/pdf/ | Descarga PDF | Autenticado |
 
 Donde `{recurso}` es `libros`, `clientes` o `pedidos`.
 
@@ -237,9 +251,9 @@ Donde `{recurso}` es `libros`, `clientes` o `pedidos`.
 
 | Método | Ruta | Descripción | Permisos |
 |:---|:---|:---|:---|
-| `POST` | `/api/login/` | Inicia sesión | Público |
-| `POST` | `/api/logout/` | Cierra la sesión | Autenticado |
-| `GET` | `/api/me/` | Devuelve autenticación + rol | Público |
+| POST | /api/login/ | Inicia sesión | Público |
+| POST | /api/logout/ | Cierra la sesión | Autenticado |
+| GET | /api/me/ | Devuelve autenticación + rol | Público |
 
 ---
 
@@ -247,9 +261,9 @@ Donde `{recurso}` es `libros`, `clientes` o `pedidos`.
 
 | Ruta | Descripción |
 |:---|:---|
-| `/` | Catálogo público. No requiere login. |
-| `/login` | Inicio de sesión. |
-| `/admin` | Panel de administración. Redirige a `/login` si no hay sesión. |
+| / | Catálogo público. No requiere login. |
+| /login | Inicio de sesión. |
+| /admin | Panel de administración. Redirige a /login si no hay sesión. |
 
 ---
 
@@ -263,10 +277,10 @@ docker-compose exec web python -m pytest catalogo/tests/ -v
 
 **19 tests pasando:**
 
-- **`test_libros.py` (3 tests):** listado público, protección sin login, creación autenticada.
-- **`test_clientes.py` (4 tests):** acceso restringido, creación, validación de email único.
-- **`test_pedidos.py` (3 tests):** descuento de stock, validación de stock insuficiente, devolución al borrar.
-- **`test_roles.py` (9 tests):** permisos por rol para admin, editor, lector y anónimo.
+- **test_libros.py (3 tests):** listado público, protección sin login, creación autenticada.
+- **test_clientes.py (4 tests):** acceso restringido, creación, validación de email único.
+- **test_pedidos.py (3 tests):** descuento de stock, validación de stock insuficiente, devolución al borrar.
+- **test_roles.py (9 tests):** permisos por rol para admin, editor, lector y anónimo.
 
 ### Frontend (Jest)
 
@@ -279,10 +293,10 @@ npm test
 
 ### CI/CD
 
-Los tests corren automáticamente en cada push a `main` mediante **GitHub Actions**:
+Los tests corren automáticamente en cada push a main mediante GitHub Actions:
 
-- **Job 1:** Backend (pytest) en Ubuntu con PostgreSQL 16.
-- **Job 2:** Frontend (Jest) en Ubuntu con Node 20.
+- Job 1: Backend (pytest) en Ubuntu con PostgreSQL 16.
+- Job 2: Frontend (Jest) en Ubuntu con Node 20.
 
 Ver el badge arriba del README para el estado actual.
 
@@ -290,35 +304,35 @@ Ver el badge arriba del README para el estado actual.
 
 ## 🐳 Docker: el proceso completo
 
-Esta fue una de las partes más complejas del proyecto. No solo era levantar los contenedores, sino asegurar que al arrancar se ejecutaran todos los comandos necesarios **en el orden correcto** y que el frontend estuviera disponible cuando el backend ya estuviera listo.
+Esta fue una de las partes más complejas del proyecto. No solo era levantar los contenedores, sino asegurar que al arrancar se ejecutaran todos los comandos necesarios en el orden correcto y que el frontend estuviera disponible cuando el backend ya estuviera listo.
 
-### `docker-compose.yml`
+### docker-compose.yml
 
-Define tres servicios: `db`, `web` y `frontend`.
+Define tres servicios: db, web y frontend.
 
-**`db`:** PostgreSQL 16 con un `healthcheck` para garantizar que la base de datos esté lista antes de que el backend intente conectarse.
+**db:** PostgreSQL 16 con un healthcheck para garantizar que la base de datos esté lista antes de que el backend intente conectarse.
 
-**`web`:** el backend. El comando de arranque ejecuta `python manage.py bootstrap`, que internamente hace:
+**web:** el backend. El comando de arranque ejecuta `python manage.py bootstrap`, que internamente hace:
 
-1. `migrate` — aplica las migraciones.
-2. `crear_grupos` — crea los grupos `admin`, `editor` y `lector` con sus permisos.
-3. `crear_admin` — crea el superusuario `root` y lo asigna al grupo `admin`.
-4. `poblar_libros` — puebla con 449 libros de Open Library **solo si la base de datos está vacía**.
-5. `runserver` — inicia el servidor de desarrollo.
+1. migrate — aplica las migraciones.
+2. crear_grupos — crea los grupos admin, editor y lector con sus permisos.
+3. crear_admin — crea el superusuario root y lo asigna al grupo admin.
+4. poblar_libros — puebla con 449 libros de Open Library solo si la base de datos está vacía.
+5. runserver — inicia el servidor de desarrollo.
 
-**`frontend`:** Next.js en modo desarrollo. Depende de `web`.
+**frontend:** Next.js en modo desarrollo. Depende de web.
 
 ### Producción (Render)
 
-En producción, el backend usa `entrypoint.sh` en lugar de `docker-compose`:
+En producción, el backend usa `entrypoint.sh` en lugar de docker-compose:
 
 1. Aplica migraciones.
 2. Crea grupos y admin.
-3. Recolecta archivos estáticos (`collectstatic`).
+3. Recolecta archivos estáticos (collectstatic).
 4. Puebla libros solo si la base de datos está vacía.
-5. Arranca `gunicorn` con 2 workers.
+5. Arranca gunicorn con 2 workers.
 
-### `Dockerfile`
+### Dockerfile
 
 ```dockerfile
 FROM python:3.14-slim
@@ -339,20 +353,21 @@ CMD ["./entrypoint.sh"]
 
 ### Por qué funciona
 
-El encadenamiento con `&&` y el `healthcheck` garantizan un flujo **determinista**. Cuando ves el contenedor corriendo, sabes que todo está en su sitio.
+El encadenamiento con && y el healthcheck garantizan un flujo determinista. Cuando ves el contenedor corriendo, sabes que todo está en su sitio.
 
 ---
 
 ## 🗄️ Modelos de datos
 
-Definidos en la app `catalogo`:
+Definidos en la app catalogo:
 
 - **Libro** — título, autor, precio, stock, URL de portada, referencia a Open Library.
 - **Cliente** — nombre, email único.
-- **Pedido** — relación con `Cliente`, fecha de creación.
-- **DetallePedido** — relación entre `Pedido` y `Libro`, con cantidad.
+- **Pedido** — relación con Cliente, fecha de creación.
+- **DetallePedido** — relación entre Pedido y Libro, con cantidad.
 
 **Lógica de negocio:**
+
 - Al crear un pedido, se valida que hay stock suficiente para cada item.
 - Se descuenta el stock al confirmar el pedido.
 - Al editar un pedido, se devuelve el stock de los items anteriores y se descuenta el nuevo.
@@ -404,235 +419,96 @@ bookify/
 
 Esta sección documenta los problemas reales que aparecieron durante el desarrollo. No todo fue lineal.
 
-### 1. El backend devolvía 401 al listar clientes
+### Deploy y producción
 
-**Contexto:** Al implementar tests, uno detectó que `/api/clientes/` devolvía `200` sin autenticación. Se corrigió el `ClienteViewSet` para requerir login. Pero al probar la app, el frontend fallaba con `clientes.map is not a function`.
+**1. Render rechazaba todas las peticiones con 400**
 
-**Causa:** El `GET` del frontend no enviaba la cookie de sesión. Django devolvía un objeto de error (`{"detail": "..."}`) y React intentaba hacer `.map()` sobre un objeto.
+Todos los endpoints devolvían 400 después del primer deploy. La variable `ALLOWED_HOSTS` apuntaba a `bookify-api.onrender.com`, pero la URL real era `bookify-zryf.onrender.com`. Django rechaza peticiones cuyo host no esté en la lista. Corregí la variable con el dominio real de Render. **Lección:** verificar siempre el dominio real que asigna el proveedor.
 
-**Solución:** Actualizar los `route.ts` de clientes y pedidos para extraer la cookie del request y enviarla al backend:
+**2. El backend se dormía cada 15 minutos (spin-down de Render free)**
 
-```typescript
-export async function GET(req: Request) {
-    const cookie = req.headers.get('cookie') || '';
-    const res = await fetch(`${API_URL}/api/clientes/`, {
-        cache: 'no-store',
-        headers: { cookie },
-    });
-    // ...
-}
-```
+El plan gratuito de Render apaga el servicio tras 15 minutos de inactividad. La primera visita después tardaba 50 segundos. Usé **UptimeRobot** para pingear el backend cada 5 minutos. Resultado: nunca se duerme, la primera visita carga al instante.
 
-**Lección:** Cuando cambias permisos en el backend, revisa que el frontend siga enviando las credenciales.
+**3. Whitenoise no encontraba los archivos estáticos**
 
----
+El admin de Django en producción cargaba sin estilos (`No directory at: /app/staticfiles/`). Whitenoise necesita que los archivos estén recolectados en `STATIC_ROOT`. Añadí `collectstatic` al `entrypoint.sh`.
 
-### 2. Docker tardaba 40 segundos en arrancar
+**4. Conexión SSL a Neon**
 
-**Contexto:** Cada `docker-compose up` ejecutaba `poblar_libros`, que consulta Open Library con pausas de 0.5 segundos entre requests. Con 15 sujetos, tardaba ~40 segundos. Al reiniciar Docker, se repetía aunque los libros ya existieran.
+Neon exige SSL en conexiones PostgreSQL. Añadí `OPTIONS: { sslmode: 'prefer' }` configurable por variable de entorno. En local usa `prefer`, en producción usa `require`.
 
-**Solución:** Hacer el comando condicional. Solo puebla si la base de datos está vacía. Se implementó en un comando `bootstrap` que verifica `Libro.objects.count() == 0` antes de poblar.
+**5. `.env` subido a GitHub por accidente**
 
-**Resultado:** Arranque de 5 segundos cuando ya hay datos, 45 segundos la primera vez.
+El archivo `.env` con el `SECRET_KEY` quedó en el repo público. Añadí `.env` al `.gitignore`, ejecuté `git rm --cached .env`, y **regeneré el SECRET_KEY** con `get_random_secret_key()`.
 
----
+### Backend
 
-### 3. Render rechazaba todas las peticiones con 400
+**6. El backend devolvía 401 al listar clientes**
 
-**Contexto:** Al deployar el backend en Render, todos los endpoints devolvían `400 Bad Request`. Ni siquiera `/api/libros/` funcionaba.
+El test detectó que `/api/clientes/` devolvía 200 sin autenticación. Corregí el `ClienteViewSet` para requerir login. Pero entonces el frontend fallaba con `clientes.map is not a function`. **Causa:** el GET del frontend no enviaba la cookie de sesión, así que Django devolvía un objeto de error, no un array. **Solución:** actualizar los `route.ts` para enviar la cookie.
 
-**Causa:** La variable `ALLOWED_HOSTS` apuntaba a `bookify-api.onrender.com`, pero la URL real asignada por Render era `bookify-zryf.onrender.com`. Django rechaza peticiones cuyo host no esté en la lista.
+**7. Hook de React mal ordenado**
 
-**Solución:** Corregir la variable en el panel de Render con el nombre real del servicio.
+Error `Rendered more hooks than during the previous render` en el panel admin. Un `useMemo` estaba después de un `return` condicional. **Solución:** moverlo antes del return temprano. **Lección:** todos los hooks van al inicio del componente.
 
-**Lección:** Siempre verificar el dominio real que asigna el proveedor, no asumir el nombre.
+**8. Superuser con grupo lector**
 
----
+Un usuario llamado `lector` podía acceder a `/api/estadisticas/` (solo admin) porque tenía `is_superuser=True`. Los superusers ignoran los permisos de grupo. **Solución:** `u.is_superuser = False` desde el shell. **Lección:** solo root debe ser superuser.
 
-### 4. El backend se dormía cada 15 minutos (spin-down de Render free)
+**9. Estilos del admin rotos por permisos personalizados**
 
-**Contexto:** El plan gratuito de Render apaga el servicio tras 15 minutos de inactividad. La primera visita después tarda hasta 50 segundos en responder.
+Después de implementar `DjangoModelPermissionsOrReadOnly`, el catálogo público devolvía 403 en libros. La clase padre exige autenticación **incluso para GET**. **Solución:** crear `ReadOnlyOrDjangoModelPermissions` desde `BasePermission`.
 
-**Impacto:** Un reclutador que entrara por primera vez vería una pantalla de carga de 50 segundos y probablemente abandonaría.
+### Frontend
 
-**Solución:** Usar **UptimeRobot** (gratis) para pingear el backend cada 5 minutos.
+**10. Tests de accesibilidad fallando**
 
-**Resultado:** El backend nunca se duerme. La primera visita carga instantáneamente.
+Los tests de `ClienteForm` fallaban con `Unable to find an element with the placeholder text of: Nombre`. Los inputs no tenían `<label>` asociado. **Solución:** añadir `htmlFor` al label e `id` al input, y cambiar `getByPlaceholderText` por `getByLabelText`.
 
-**Lección:** En servicios free, el "spin-down" es común. Un ping externo es la solución más simple y sin costo.
+**11. HMR bloqueado en Safari al acceder desde el iPhone**
 
----
+Next.js bloqueaba el Hot Module Replacement por CORS al abrir desde Safari en el iPhone. **Solución:** añadir la IP local a `allowedDevOrigins` en `next.config.ts` (solo aplica en desarrollo).
 
-### 5. Whitenoise no encontraba los archivos estáticos
+**12. Responsive con múltiples problemas**
 
-**Contexto:** Al deployar en Render, el admin de Django cargaba sin estilos (`No directory at: /app/staticfiles/`).
+Al probar en móvil aparecieron varios problemas: header solapado, botones de "Editar"/"Borrar" que dependían de hover (no existe en móvil), paginación muy chica para el dedo, modal muy alto. **Soluciones:** header en `flex-col` en móvil, botones siempre visibles en móvil, paginación con flechas grandes, modal con portada más chica.
 
-**Causa:** Whitenoise necesita que los archivos estáticos estén recolectados en `STATIC_ROOT` antes de servirlos.
+**13. Select de libro se salía del card**
 
-**Solución:** Añadir `collectstatic` al `entrypoint.sh`.
+En el formulario de pedidos, cuando el nombre del libro era largo, el select empujaba el input y el botón fuera del contenedor. En flexbox los elementos tienen `min-width: auto`, lo que les impide encogerse. **Solución:** `min-w-0` al select y `shrink-0` al input de cantidad y al botón.
 
-**Resultado:** El admin de Django en producción carga con todos sus estilos.
+### Docker
 
----
+**14. Docker tardaba 40 segundos en arrancar**
 
-### 6. Conexión SSL a Neon
+Cada `docker-compose up` ejecutaba `poblar_libros`, que consulta Open Library con pausas de 0.5 segundos. Tardaba 40 segundos y se repetía en cada reinicio. **Solución:** un comando `bootstrap` que verifica si la base de datos está vacía antes de poblar. Arranque de 5 segundos cuando ya hay datos.
 
-**Contexto:** Neon exige SSL en las conexiones a PostgreSQL. Django por defecto no lo activa.
+**15. Docker `--build` vs `up`**
 
-**Solución:** Añadir `OPTIONS` en la configuración de la base de datos:
+Tras instalar una dependencia nueva, el contenedor seguía sin reconocerla. `docker-compose up` usa la imagen vieja. **Solución:** usar `docker-compose up --build` cuando cambian `requirements.txt` o `package.json`.
 
-```python
-DATABASES = {
-    'default': {
-        # ...
-        'OPTIONS': {
-            'sslmode': os.environ.get('DB_SSLMODE', 'prefer'),
-        },
-    }
-}
-```
+**16. Comando mal copiado generó archivos basura**
 
-**Resultado:** El mismo código funciona en local (`prefer`) y en producción (`require`).
+Al copiar comandos en la terminal, se generó `requirements.txtdocker-compose` por falta de un salto de línea. **Solución:** `git rm requirements.txtdocker-compose`. **Lección:** copiar comandos uno a uno, no en bloque, cuando tienen `>`.
 
----
+### Testing
 
-### 7. Hook de React mal ordenado
+**17. `reportlab` no estaba en el contenedor**
 
-**Contexto:** El error `Rendered more hooks than during the previous render` apareció en el panel admin.
+Los imports de `reportlab` aparecían como "Unresolved reference" en PyCharm. Estaba instalado en el venv local pero no en Docker. **Solución:** `docker-compose exec web pip install reportlab` y regenerar `requirements.txt` con `pip freeze`.
 
-**Causa:** Un `useMemo` estaba después de un `return` condicional. React exige que todos los hooks se ejecuten en el mismo orden en cada render.
+**18. Tests de CRUD fallando por permisos**
 
-**Solución:** Mover el `useMemo` **antes** del `return` temprano.
-
-**Lección:** Todos los hooks van al inicio del componente, antes de cualquier `if` que devuelva algo.
-
----
-
-### 8. Tests de accesibilidad fallando
-
-**Contexto:** Los tests de `ClienteForm` fallaban en CI con `Unable to find an element with the placeholder text of: Nombre`.
-
-**Causa:** Los inputs no tenían `<label>` asociado. Testing Library no podía encontrar los campos.
-
-**Solución:** Añadir `htmlFor` al label e `id` al input. Y cambiar `getByPlaceholderText` por `getByLabelText`.
-
-**Resultado:** Los tests pasan y el formulario es más accesible.
-
----
-
-### 9. HMR bloqueado en Safari al acceder desde el iPhone
-
-**Contexto:** Al abrir la app desde Safari en el iPhone, Next.js bloqueaba el Hot Module Replacement por CORS.
-
-**Solución:** Añadir la IP local a `allowedDevOrigins` en `next.config.ts`. Solo aplica en desarrollo.
-
----
-
-### 10. Responsive: múltiples ajustes
-
-**Problemas detectados al probar en móvil:**
-
-- El header del admin se solapaba en móvil.
-- Los botones "Editar"/"Borrar" dependían de hover, que no existe en móvil.
-- La paginación era muy chica para tocar con el dedo.
-- El modal ocupaba demasiado espacio vertical.
-
-**Soluciones:**
-
-- Header en `flex-col` en móvil.
-- Botones siempre visibles en móvil (`opacity-100 md:opacity-0 md:group-hover:opacity-100`).
-- Paginación con flechas grandes y "Página X de Y" en móvil.
-- Modal con portada más chica (`h-40` en móvil).
-
----
-
-### 11. `.env` subido a GitHub por accidente
-
-**Contexto:** El archivo `.env` con el `SECRET_KEY` quedó en el repo público.
-
-**Solución:**
-1. Añadir `.env` al `.gitignore`.
-2. `git rm --cached .env` para dejar de rastrearlo.
-3. **Regenerar el `SECRET_KEY`** con `get_random_secret_key()`.
-4. Actualizar el `.env` local y las variables en Render.
-
----
-
-### 12. Docker `--build` vs `up`
-
-**Contexto:** Tras instalar una dependencia nueva, el contenedor seguía sin reconocerla.
-
-**Causa:** `docker-compose up` usa la imagen vieja. Los cambios en `requirements.txt` o `package.json` no se aplican.
-
-**Solución:** Usar `docker-compose up --build` cuando cambien dependencias.
-
----
-
-### 13. `gh` CLI sin Homebrew
-
-**Contexto:** Se quería instalar GitHub CLI sin usar Homebrew.
-
-**Solución:** Descargar el `.pkg` oficial desde GitHub releases. Instalar. Autenticarse con `gh auth login`.
-
----
-
-### 14. Comando mal copiado generó archivos basura
-
-**Contexto:** Al copiar comandos en la terminal, se generó `requirements.txtdocker-compose` por falta de un salto de línea.
-
-**Solución:** `git rm requirements.txtdocker-compose` y commit.
-
-**Lección:** Copiar comandos uno a uno, no en bloque, cuando tengan `>`.
-
----
-
-### 15. Estilos del admin rotos por permisos personalizados
-
-**Contexto:** Después de implementar `DjangoModelPermissionsOrReadOnly`, el catálogo público devolvía `403` en libros.
-
-**Causa:** La clase padre `DjangoModelPermissions` exige autenticación **incluso para GET**.
-
-**Solución:** Crear una clase `ReadOnlyOrDjangoModelPermissions` desde `BasePermission` que devuelve `True` para métodos seguros.
-
----
-
-### 16. `reportlab` no estaba en el contenedor
-
-**Contexto:** Los imports de `reportlab` aparecían como "Unresolved reference" en PyCharm.
-
-**Causa:** El paquete se instaló en el venv local pero no en el contenedor Docker.
-
-**Solución:** `docker-compose exec web pip install reportlab` y regenerar `requirements.txt` con `pip freeze`.
-
----
-
-### 17. Superuser con grupo `lector`
-
-**Contexto:** Un usuario llamado `lector` podía acceder a `/api/estadisticas/` (solo admin).
-
-**Causa:** El usuario tenía `is_superuser=True`, y los superusers ignoran los permisos de grupo.
-
-**Solución:** `u.is_superuser = False` y `u.is_staff = False` desde el shell.
-
-**Lección:** Solo `root` debe ser superuser. Los demás usuarios se controlan por grupos.
-
----
-
-### 18. Select de libro se salía del card
-
-**Contexto:** En el formulario de pedidos, cuando el nombre del libro era largo, el `<select>` empujaba el input y el botón fuera del contenedor.
-
-**Causa:** En flexbox, los elementos tienen `min-width: auto` por defecto, lo que les impide encogerse por debajo del ancho de su contenido.
-
-**Solución:** Añadir `min-w-0` al `<select>` y `shrink-0` al input de cantidad y al botón.
+Después de implementar roles, los tests de CRUD fallaban con 403. Las fixtures creaban usuarios sin grupo. **Solución:** usar `create_superuser` en las fixtures (los superusers ignoran los permisos de grupo). Los tests de roles siguen probando permisos reales.
 
 ---
 
 ## 🛠️ Herramientas y trucos útiles
 
-### GitHub CLI (`gh`)
+### GitHub CLI (gh)
 
 Instalado desde el `.pkg` oficial sin Homebrew. Se usa para:
+
 - Crear issues en masa: `gh issue create -R usuario/repo`
 - Cerrar tickets: `gh issue close 11`
 - Gestionar el tablero de Projects: `gh project item-add`
@@ -700,9 +576,9 @@ git push origin main
 - **Serializers anidados:** creación y actualización de pedidos con sus detalles en una sola petición.
 - **Validación de lógica de negocio:** stock disponible al crear y editar pedidos.
 - **Autenticación por sesión:** cookies y CSRF, tanto en backend como en frontend.
-- **Manejo de CORS:** configuración de `django-cors-headers` para producción.
+- **Manejo de CORS:** configuración de django-cors-headers para producción.
 - **Docker Compose:** orquestación de múltiples servicios con healthchecks y comandos de inicialización.
-- **Comandos custom de Django:** `crear_grupos`, `crear_admin`, `poblar_libros`, `bootstrap`.
+- **Comandos custom de Django:** crear_grupos, crear_admin, poblar_libros, bootstrap.
 - **Exportación de datos:** CSV con `csv` built-in y PDF con `reportlab`.
 - **Gráficos en el frontend:** Recharts para visualizar estadísticas.
 - **Tests automatizados:** pytest para el backend, Jest para el frontend.
