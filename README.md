@@ -557,7 +557,7 @@ git push origin main
 
 - **Backend:** API REST completa con 3 recursos (Libros, Clientes, Pedidos) y 4 roles de usuario.
 - **Frontend:** aplicación Next.js con catálogo público, panel admin de 5 pestañas, y sistema de filtros, búsqueda y paginación.
-- **Dashboard:** 4 tarjetas de resumen y 3 gráficos con Recharts.
+- **Dashboard:** 5 tarjetas de resumen y 2 gráficos con Recharts.
 - **Exportación:** CSV y PDF de los 3 recursos.
 - **Tests:** 19 tests de backend + 3 de frontend, con cobertura de CRUDs, validaciones, permisos por rol y stock.
 - **CI/CD:** workflow de GitHub Actions que corre los tests en cada push.
