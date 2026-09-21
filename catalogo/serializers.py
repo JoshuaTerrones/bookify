@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User, Group
 from .models import Libro, Cliente, Pedido, DetallePedido
 
 
@@ -20,6 +21,7 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetallePedido
         fields = ['id', 'libro', 'libro_titulo', 'cantidad']
+
 
 class PedidoSerializer(serializers.ModelSerializer):
     cliente_nombre = serializers.CharField(source='cliente.nombre', read_only=True)
@@ -55,7 +57,6 @@ class PedidoSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         detalles_data = validated_data.pop('detalles', None)
 
-        # Devolver el stock de los detalles anteriores antes de borrarlos
         if detalles_data is not None:
             for detalle_viejo in instance.detalles.all():
                 detalle_viejo.libro.stock += detalle_viejo.cantidad
@@ -71,4 +72,70 @@ class PedidoSerializer(serializers.ModelSerializer):
 
         instance.cliente = validated_data.get('cliente', instance.cliente)
         instance.save()
+        return instance
+
+
+class UserSerializer(serializers.ModelSerializer):
+    rol = serializers.SerializerMethodField()
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    grupos = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=False
+    )
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'rol', 'grupos', 'password']
+
+    def get_rol(self, obj):
+        grupos = list(obj.groups.values_list('name', flat=True))
+        if 'admin' in grupos:
+            return 'admin'
+        elif 'editor' in grupos:
+            return 'editor'
+        elif 'lector' in grupos:
+            return 'lector'
+        return 'sin_rol'
+
+    def create(self, validated_data):
+        grupos = validated_data.pop('grupos', [])
+        password = validated_data.pop('password', '')
+
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=password or 'changeme123'
+        )
+
+        for nombre_grupo in grupos:
+            try:
+                grupo = Group.objects.get(name=nombre_grupo)
+                user.groups.add(grupo)
+            except Group.DoesNotExist:
+                pass
+
+        return user
+
+    def update(self, instance, validated_data):
+        grupos = validated_data.pop('grupos', None)
+        password = validated_data.pop('password', '')
+
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+
+        if grupos is not None:
+            instance.groups.clear()
+            for nombre_grupo in grupos:
+                try:
+                    grupo = Group.objects.get(name=nombre_grupo)
+                    instance.groups.add(grupo)
+                except Group.DoesNotExist:
+                    pass
+
         return instance

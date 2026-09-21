@@ -85,7 +85,6 @@ export default function Admin() {
 
     const router = useRouter();
 
-    // === PERMISOS POR ROL ===
     const esAdmin = rolUsuario === 'admin';
     const puedeEditar = rolUsuario === 'admin' || rolUsuario === 'editor';
 
@@ -162,6 +161,24 @@ export default function Admin() {
 
     const mostrarToast = (mensaje: string, tipo: 'success' | 'error' = 'success') => {
         setToast({ mensaje, tipo });
+    };
+
+    const descargarArchivo = async (recurso: string, formato: 'csv' | 'pdf') => {
+        const res = await fetch(`/api/exportar/${recurso}/${formato}`);
+        if (!res.ok) {
+            mostrarToast(`Error al descargar ${formato.toUpperCase()}`, 'error');
+            return;
+        }
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${recurso}.${formato}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        mostrarToast(`${formato.toUpperCase()} descargado`);
     };
 
     const handleBorrarLibro = async (id: number) => {
@@ -301,7 +318,6 @@ export default function Admin() {
 
     return (
         <main className="min-h-screen bg-gray-50">
-            {/* HEADER */}
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -332,14 +348,12 @@ export default function Admin() {
             </header>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-                {/* AVISO PARA LECTORES */}
                 {rolUsuario === 'lector' && (
                     <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-sm mb-6">
                         Estás en modo <strong>lector</strong>. Puedes ver la información pero no modificarla.
                     </div>
                 )}
 
-                {/* TABS */}
                 <div className="border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-1 min-w-max">
                         {tabs.map(tab => (
@@ -367,7 +381,6 @@ export default function Admin() {
                     </div>
                 </div>
 
-                {/* BUSCADOR Y FILTROS */}
                 {tabActiva !== 'dashboard' && (
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
                         <div className="relative flex-1 max-w-md">
@@ -413,7 +426,6 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* PANEL DE FILTROS */}
                 {tabActiva === 'libros' && mostrarFiltros && (
                     <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 animate-fade-in">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -490,7 +502,6 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* === DASHBOARD === */}
                 {tabActiva === 'dashboard' && esAdmin && (
                     <Dashboard />
                 )}
@@ -498,14 +509,26 @@ export default function Admin() {
                 {/* === LIBROS === */}
                 {tabActiva === 'libros' && (
                     <div>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                             {(busquedaAdmin || filtrosActivos > 0) && (
                                 <p className="text-sm text-gray-500">
                                     {librosFiltrados.length} {librosFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
                             {puedeEditar && (
-                                <div className="ml-auto">
+                                <div className="ml-auto flex flex-wrap items-center gap-2">
+                                    <button
+                                        onClick={() => descargarArchivo('libros', 'csv')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ CSV
+                                    </button>
+                                    <button
+                                        onClick={() => descargarArchivo('libros', 'pdf')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ PDF
+                                    </button>
                                     <button
                                         onClick={() => { setLibroEditando(null); setMostrarFormLibro(true); }}
                                         className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
@@ -603,14 +626,26 @@ export default function Admin() {
                 {/* === CLIENTES === */}
                 {tabActiva === 'clientes' && (
                     <div>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                             {busquedaAdmin && (
                                 <p className="text-sm text-gray-500">
                                     {clientesFiltrados.length} {clientesFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
                             {puedeEditar && (
-                                <div className="ml-auto">
+                                <div className="ml-auto flex flex-wrap items-center gap-2">
+                                    <button
+                                        onClick={() => descargarArchivo('clientes', 'csv')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ CSV
+                                    </button>
+                                    <button
+                                        onClick={() => descargarArchivo('clientes', 'pdf')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ PDF
+                                    </button>
                                     <button
                                         onClick={() => { setClienteEditando(null); setMostrarFormCliente(true); }}
                                         className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
@@ -692,14 +727,26 @@ export default function Admin() {
                 {/* === PEDIDOS === */}
                 {tabActiva === 'pedidos' && (
                     <div>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                             {busquedaAdmin && (
                                 <p className="text-sm text-gray-500">
                                     {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             )}
                             {puedeEditar && (
-                                <div className="ml-auto">
+                                <div className="ml-auto flex flex-wrap items-center gap-2">
+                                    <button
+                                        onClick={() => descargarArchivo('pedidos', 'csv')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ CSV
+                                    </button>
+                                    <button
+                                        onClick={() => descargarArchivo('pedidos', 'pdf')}
+                                        className="text-xs sm:text-sm text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg transition border border-gray-300"
+                                    >
+                                        ⬇ PDF
+                                    </button>
                                     <button
                                         onClick={() => { setPedidoEditando(null); setMostrarFormPedido(true); }}
                                         className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium"
@@ -874,7 +921,6 @@ export default function Admin() {
                 )}
             </div>
 
-            {/* TOAST */}
             {toast && (
                 <Toast
                     mensaje={toast.mensaje}
