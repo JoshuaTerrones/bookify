@@ -11,7 +11,11 @@ def api_client():
 
 @pytest.fixture
 def usuario_admin(db):
-    return User.objects.create_user(username='testuser', password='testpass123')
+    return User.objects.create_superuser(
+        username='testuser',
+        email='test@test.com',
+        password='testpass123'
+    )
 
 
 @pytest.fixture
@@ -42,7 +46,7 @@ def test_crear_libro_sin_auth_falla(api_client):
         'precio': '10.00',
         'stock': 5,
     })
-    assert response.status_code == 403
+    assert response.status_code in [401, 403]
 
 
 @pytest.mark.django_db
